@@ -4,6 +4,8 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <vector>
+#include <list>
 
 using namespace std;
 
@@ -17,18 +19,128 @@ Environnement* Environnement::init (char* filename)
 }
 
 
-Wall* get_murs (ifstream& file)
+void get_murs (ifstream& file)
 {
-	string line;
-	while(getline(file, line))
+	struct Coord
 	{
-		
+		int x,y;
+		bool operator==(Coord c)
+		{
+			return (c.x == x) && (c.y == y);
+		}
+	};
+	string line;
+
+	vector<Wall> walls;
+	list<Coord> murs_vert;
+	int x = 0;
+	int nb_mur = 0;
+	while(getline(file,line))
+	{
+		cout<<"lecture ligne "<<x<<endl<<line<<endl;
+		bool mur_en_cours = false;
+		//Wall mur = {0,0,0,0,0};
+		Coord debut = {0,0};
+		//recherche de mur verticaux
+		auto iter = murs_vert.begin();
+		cout<<"recherche des murs verticaux"<<endl;
+		int cpt = 0;
+		int taille = murs_vert.size();
+		while(!murs_vert.empty() && iter != murs_vert.end())
+		{
+			cout<<cpt<<"/"<<taille<<endl;
+			cpt++;
+			int x1 = (*iter).x;
+			int y1 = (*iter).y;
+			switch(line[(*iter).y])
+			{
+				case '|'://si il y a un | on ne fait rien
+					cout<<"mur potentiel en"<<x1<<","<<y1<<endl;
+				break;
+				case '+': // Si on trouve un + en dessous d'un + déjà vu on crée le mur
+					cout<<"decouverte mur vertical en "<<x1<<","<<y1<<" ; "<<x<<","<<y1<<endl;
+					nb_mur++;
+					walls.push_back({x1,x,y1,y1,0});
+					iter = murs_vert.erase(iter); //on retire le +
+				break;
+
+				default:
+					iter = murs_vert.erase(iter);
+				break;
+			}
+			iter++;
+		}
+		//analyse de la ligne en cours
+		for(int i = 0; i < line.size(); i++)
+		{
+			//cout<<"char "<<i<<endl;
+			char c = line[i];
+			switch (c)
+			{
+				case '+':
+					murs_vert.push_back({x,i});
+					if(mur_en_cours)//si un mur est en cours de lecture sur cette ligne le mur est fini et on l'ajoute
+					{
+						//mur._x2 = x;
+						//mur._y2 = i;
+						cout<<"ajout du mur "<<debut.x<<","<<debut.y<<" ; "<<x<<","<<i<<endl;
+						walls.push_back({debut.x,x,debut.y,i,0});//on copie dans le tableau);
+						//mur = {0,0,0,0,0}; //on réinitialise le mur en cours
+						nb_mur ++;
+						if(i < line.size() - 1 && line[i+1] == '-')//si un mur continu après
+						{
+							debut.x = x;
+							debut.y = i;
+						}else //sinon le mur est fini
+						{
+							mur_en_cours = false;
+						}
+					}else{
+						if(i < line.size() - 1 && line[i+1] == '-')
+						{
+							//on initialise le début du mur
+							cout<<"début de mur trouvé en "<<x<<","<<i<<endl;
+							//mur._x1 = x;
+							//mur._y1 = i;
+							debut.x = x;
+							debut.y = i;
+							mur_en_cours = true; //on inidique qu'on commence à lire un mur
+						}
+					}
+				break;		
+			}
+		}
+		cout<<"fin analyse ligne"<<endl;
+		x++;//on passe à la ligne suivante
 	}
+	cout<<"fin de la recherche et affichage des résultats"<<endl;
+	cout<<"murs trouve: "<<nb_mur<<endl;
+	//on affiche la liste des murs créers
+	for (int i = 0; i < walls.size(); i++)
+	{
+		cout<<"Wall: "<<walls[i]._x1<<","<<walls[i]._y1<<" : "<<walls[i]._x2<<","<<walls[i]._y2<<endl;
+	}
+	return;
 }
 
 
 Labyrinthe::Labyrinthe (char* filename)
 {
+	//test de la fonction de scan
+
+	ifstream file;
+	file.open(filename);
+	string line;
+	for(int i = 0; i<4; i++)
+	{
+		getline(file,line);
+		cout<<line<<endl;
+	}
+	cout<<"et maintenant on cherche les murs"<<endl;
+	get_murs(file);
+	cout<<"fin du test"<<endl;
+	file.close();
+	/////////////////////////////
 	// les 4 murs.
 	static Wall walls [] = {
 		{ 0, 0, LAB_WIDTH-1, 0, 0 },
