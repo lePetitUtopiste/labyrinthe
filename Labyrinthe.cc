@@ -44,7 +44,7 @@ void get_murs (ifstream& file)
 		//recherche de mur verticaux
 		auto iter = murs_vert.begin();
 		cout<<"recherche des murs verticaux"<<endl;
-		int cpt = 0;
+		int cpt = 1;
 		int taille = murs_vert.size();
 		while(!murs_vert.empty() && iter != murs_vert.end())
 		{
@@ -56,6 +56,7 @@ void get_murs (ifstream& file)
 			{
 				case '|'://si il y a un | on ne fait rien
 					cout<<"mur potentiel en"<<x1<<","<<y1<<endl;
+					iter ++;
 				break;
 				case '+': // Si on trouve un + en dessous d'un + déjà vu on crée le mur
 					cout<<"decouverte mur vertical en "<<x1<<","<<y1<<" ; "<<x<<","<<y1<<endl;
@@ -68,7 +69,6 @@ void get_murs (ifstream& file)
 					iter = murs_vert.erase(iter);
 				break;
 			}
-			iter++;
 		}
 		//analyse de la ligne en cours
 		for(int i = 0; i < line.size(); i++)
