@@ -19,7 +19,7 @@ Environnement* Environnement::init (char* filename)
 }
 
 
-void get_murs (ifstream& file)
+void scan_laby (Labyrinthe* l,ifstream& file)
 {
 	struct Coord
 	{
@@ -29,12 +29,24 @@ void get_murs (ifstream& file)
 			return (c.x == x) && (c.y == y);
 		}
 	};
-	string line;
 
 	vector<Wall> walls;
-	list<Coord> murs_vert;
+	l->_nwall = 0;
+	vector<Box> caisses;
+	l->_nboxes = 0;
+	vector<Box> marques;
+	l->_nmarks = 0;
+	vector<Mover*> Guards;
+	Guards.push_back(new Chasseur(l));
+	l->_nguards = 1;
+	
+
+	string line; //la ligne du fichier
+
+	list<Coord> murs_vert;//liste des murs verticaux en cours de lecture
+
 	int x = 0;
-	int nb_mur = 0;
+	//on parcours le labyrinthe ligne par ligne
 	while(getline(file,line))
 	{
 		cout<<"lecture ligne "<<x<<endl<<line<<endl;
@@ -46,6 +58,9 @@ void get_murs (ifstream& file)
 		cout<<"recherche des murs verticaux"<<endl;
 		int cpt = 1;
 		int taille = murs_vert.size();
+		/*
+		Pour chaque potentiel mur vertical on verifie dans cette ligne ce qui se trouve à cette position
+		*/
 		while(!murs_vert.empty() && iter != murs_vert.end())
 		{
 			cout<<cpt<<"/"<<taille<<endl;
@@ -60,33 +75,52 @@ void get_murs (ifstream& file)
 				break;
 				case '+': // Si on trouve un + en dessous d'un + déjà vu on crée le mur
 					cout<<"decouverte mur vertical en "<<x1<<","<<y1<<" ; "<<x<<","<<y1<<endl;
-					nb_mur++;
-					walls.push_back({x1,x,y1,y1,0});
+					l->_nwall++;
+					walls.push_back({x1,y1,x,y1,0});
 					iter = murs_vert.erase(iter); //on retire le +
 				break;
 
-				default:
+				default://s'il n'y a rien on retire ce + de la liste des coord à verifier il n'y a pas de mur vertical à cette pos
 					iter = murs_vert.erase(iter);
 				break;
 			}
 		}
 		//analyse de la ligne en cours
+		
 		for(int i = 0; i < line.size(); i++)
 		{
-			//cout<<"char "<<i<<endl;
 			char c = line[i];
 			switch (c)
 			{
+				case 'G': //si on tombe sur un G on rajoute le chasseur
+					Guards.push_back(new Gardien(l,"Lezard"));
+					Guards.back()->_x = (float)x;
+					Guards.back()->_y = (float)i;
+					l->_nguards++;
+				break;
+
+				case 'x':// les marques
+					l->_nmarks++;
+					marques.push_back({x,i,0});
+				break;
+
+				case 'T':
+					l->_treasor._x = x;
+					l->_treasor._y = i;
+				break;
+
+				case 'C':// les caisses
+					Guards[0]->_x = (float) (x);
+					Guards[0]->_y = (float) (i);
+				break;
 				case '+':
-					murs_vert.push_back({x,i});
+					murs_vert.push_back({x,i});//on ajoute ce plus dans la liste des potentiel murs verticaux
+
 					if(mur_en_cours)//si un mur est en cours de lecture sur cette ligne le mur est fini et on l'ajoute
 					{
-						//mur._x2 = x;
-						//mur._y2 = i;
 						cout<<"ajout du mur "<<debut.x<<","<<debut.y<<" ; "<<x<<","<<i<<endl;
-						walls.push_back({debut.x,x,debut.y,i,0});//on copie dans le tableau);
-						//mur = {0,0,0,0,0}; //on réinitialise le mur en cours
-						nb_mur ++;
+						walls.push_back({debut.x,debut.y,x,i,0});//on copie dans le tableau);
+						l->_nwall ++;
 						if(i < line.size() - 1 && line[i+1] == '-')//si un mur continu après
 						{
 							debut.x = x;
@@ -100,8 +134,6 @@ void get_murs (ifstream& file)
 						{
 							//on initialise le début du mur
 							cout<<"début de mur trouvé en "<<x<<","<<i<<endl;
-							//mur._x1 = x;
-							//mur._y1 = i;
 							debut.x = x;
 							debut.y = i;
 							mur_en_cours = true; //on inidique qu'on commence à lire un mur
@@ -114,12 +146,46 @@ void get_murs (ifstream& file)
 		x++;//on passe à la ligne suivante
 	}
 	cout<<"fin de la recherche et affichage des résultats"<<endl;
-	cout<<"murs trouve: "<<nb_mur<<endl;
+	cout<<"murs trouves: "<<l->_nwall<<endl;
+	//walls.shrink_to_fit();
+	//l->_walls = walls->data();
+	l->_walls = new Wall[l->_nwall];
 	//on affiche la liste des murs créers
-	for (int i = 0; i < walls.size(); i++)
+	for (int i = 0; i < l->_nwall; i++)
 	{
-		cout<<"Wall: "<<walls[i]._x1<<","<<walls[i]._y1<<" : "<<walls[i]._x2<<","<<walls[i]._y2<<endl;
+		(l->_walls)[i] = walls.at(i);
+		cout<<"Wall n°"<<i<<": "<<(l->_walls)[i]._x1<<","<<(l->_walls)[i]._y1<<" : "<<(l->_walls)[i]._x2<<","<<(l->_walls)[i]._y2<<":"<<(l->_walls)[i]._ntex<<endl;
+		
 	}
+
+	cout<<"caisses trouvees: "<<l->_nboxes<<endl;
+	//caisses->shrink_to_fit();
+	//l->_boxes = caisses->data();
+	l->_boxes = new Box[l->_nboxes];
+	for (int i = 0; i < l->_nboxes; i++)
+	{
+		l->_boxes[i] = caisses[i];
+		cout<<"{"<<(caisses)[i]._x<<","<<(caisses)[i]._y<<"}"<<endl;
+	}
+
+	cout<<"guardes trouves: "<<l->_nguards<<endl;
+	//Guards->shrink_to_fit();
+	//l->_guards = Guards->data();
+	l->_guards = new Mover*[l->_nguards];
+	for(int i = 0; i < l->_nguards; i++)
+	{
+		l->_guards[i] = Guards[i];
+		cout<<"Guard "<<l->_guards[i]<<": "<<(l->_guards[i])->_x<<","<<(l->_guards[i])->_y<<endl;
+	}
+
+	cout<<"marques au sol trouvees: "<<l->_nmarks<<endl;
+	l->_marks = new Box[l->_nmarks];
+	for(int i = 0; i < l->_nmarks; i++)
+	{
+		l->_marks[i] = marques[i];
+	}
+
+
 	return;
 }
 
@@ -127,49 +193,116 @@ void get_murs (ifstream& file)
 Labyrinthe::Labyrinthe (char* filename)
 {
 	//test de la fonction de scan
+		ifstream file;
+		file.open(filename);
+		string line;
+		for(int i = 0; i<6; i++)
+		{
+			getline(file,line);
+			cout<<line<<endl;
+		}
+		scan_laby(this,file);
 
-	ifstream file;
-	file.open(filename);
-	string line;
-	for(int i = 0; i<4; i++)
-	{
-		getline(file,line);
-		cout<<line<<endl;
-	}
-	cout<<"et maintenant on cherche les murs"<<endl;
-	get_murs(file);
-	cout<<"fin du test"<<endl;
-	file.close();
+		//initialisation de _data
+		//mise a jour des data pour
+		//les murs:
+		/*
+		for (int cpt = 0; cpt < _nwall; cpt++)
+		{
+			Wall w = _walls[cpt];
+			cout<<"mur "<<cpt<<endl<<endl;
+			if(w._x1 == w._x2)
+			{
+				for(int i = w._y1; i<w._y2; i++)
+					_data[w._x1][i] = 1;
+			}else if (w._y1 == w._y2){
+				for(int i = w._x1; i<w._x2; i++)
+					_data[i][w._y1] = 1;
+			}
+			cout<<"fin mur "<<cpt<<endl;
+		}
+		*/
+		//les boites
+		for(int i = 0; i < _nboxes; i++)
+		{
+			Box b = _boxes[i];
+			_data[b._x][b._y] = 1;
+		}
+		
+		//le trésor
+		_data[_treasor._x][_treasor._y] = 1;
+		//guardes
+		/*
+		for(int i = 1; i < _nguards ; i++)
+		{
+			Mover* m = _guards[i];
+			_data[(int)(m->_x/scale)][(int)(m->_y/scale)] = 1;
+
+		}
+		*/
+		cout<<"fin du test"<<endl;
+		file.close();
+		cout<<endl<<endl<<"============================================================================================"<<endl;
+		cout<<"Verif des données"<<endl<<endl;
+		for(int i = 0; i < _nwall; i++)
+		{
+			cout<<"wall "<<i<<" "<<_walls[i]._x1<<","<<_walls[i]._y1<<" : "<<_walls[i]._x2<<","<<_walls[i]._y2<<endl;
+		}
+
+		for(int i = 0; i < _nboxes;i++)
+		{
+			cout<<"boite :"<<_boxes[i]._x<<","<<_boxes[i]._y<<endl;
+		}
+
+		for(int i = 0 ; i < _nmarks; i++)
+		{
+			cout<<"marque :"<<_marks[i]._x<<","<<_marks[i]._y<<endl;
+		}
+		for(int i = 0; i< _nguards; i++)
+		{
+			cout<<"garde "<<_guards[i]<<": "<<_guards[i]->_x<<","<<_guards[i]->_y<<endl;
+		}
+		cout<<"fin verif des données"<<endl;
+		//initialisation des données pour les murs
 	/////////////////////////////
 	// les 4 murs.
+	/*
 	static Wall walls [] = {
 		{ 0, 0, LAB_WIDTH-1, 0, 0 },
 		{ LAB_WIDTH-1, 0, LAB_WIDTH-1, LAB_HEIGHT-1, 0 },
 		{ LAB_WIDTH-1, LAB_HEIGHT-1, 0, LAB_HEIGHT-1, 0 },
 		{ 0, LAB_HEIGHT-1, 0, 0, 0 },
 	};
+	*/
 	// une affiche.
 	//  (attention: pour des raisons de rapport d'aspect, les affiches doivent faire 2 de long)
+	/*
 	static Wall affiche [] = {
 		{ 4, 0, 6, 0, 0 },		// premi�re affiche.
 		{ 8, 0, 10, 0, 0 },		// autre affiche.
 	};
+	*/
 	// 3 caisses.
+	/*
 	static Box	caisses [] = {
 		{ 70, 12, 0 },
 		{ 10, 5, 0 },
 		{ 65, 22, 0 },
 	};
+	*/
 
 /* DEB - NOUVEAU */
 	// 2 marques au sol.
+	/*
 	static Box	marques [] = {
 		{ 50, 14, 0 },
 		{ 20, 15, 0 },
 	};
+	*/
 /* FIN - NOUVEAU */
 
 	// juste un mur autour et les 3 caisses et le tr�sor dedans.
+	/*
 	for (int i = 0; i < LAB_WIDTH; ++i)
 		for (int j = 0; j < LAB_HEIGHT; ++j) {
 			if (i == 0 || i == LAB_WIDTH-1 || j == 0 || j == LAB_HEIGHT-1)
@@ -177,43 +310,52 @@ Labyrinthe::Labyrinthe (char* filename)
 			else
 				_data [i][j] = EMPTY;
 		}
+	*/
 	// indiquer qu'on ne marche pas sur une caisse.
+	/*
 	_data [caisses [0]._x][caisses [0]._y] = 1;
 	_data [caisses [1]._x][caisses [1]._y] = 1;
 	_data [caisses [2]._x][caisses [2]._y] = 1;
+	*/
 	// les 4 murs.
-	_nwall = 4;
-	_walls = walls;
+	//_nwall = 4;
+	//_walls = walls;
 	// deux affiches.
-	_npicts = 2;
-	_picts = affiche;
+	//_npicts = 2;
+	//_picts = affiche;
 	// la deuxi�me � une texture diff�rente.
 	char	tmp [128];
+	/*
 	sprintf (tmp, "%s/%s", texture_dir, "voiture.jpg");
 	_picts [1]._ntex = wall_texture (tmp);
+	*/
 	// 3 caisses.
-	_nboxes = 3;
-	_boxes = caisses;
+	//_nboxes = 3;
+	//_boxes = caisses;
 
-/* DEB - NOUVEAU */
+	/* DEB - NOUVEAU */
 	// mettre une autre texture � la deuxi�me caisse.
-	sprintf (tmp, "%s/%s", texture_dir, "boite.jpg");
-	caisses [1]._ntex = wall_texture (tmp);
+	//sprintf (tmp, "%s/%s", texture_dir, "boite.jpg");
+	//caisses [1]._ntex = wall_texture (tmp);
 
 	// mettre les marques au sol.
+	//TODO réutiliser ce code pour varier les textures des marques aux sols
+	/*
 	sprintf (tmp, "%s/%s", texture_dir, "p1.gif");
 	marques [0]._ntex = wall_texture (tmp);
 	sprintf (tmp, "%s/%s", texture_dir, "p3.gif");
 	marques [1]._ntex = wall_texture (tmp);
-	_nmarks = 2;
-	_marks = marques;
-/* FIN - NOUVEAU */
+	*/
+	//_nmarks = 2;
+	//_marks = marques;
+	/* FIN - NOUVEAU */
 
 	// le tr�sor.
-	_treasor._x = 10;
-	_treasor._y = 10;
-	_data [_treasor._x][_treasor._y] = 1;	// indiquer qu'on ne marche pas sur le tr�sor.
+	//_treasor._x = 10;
+	//_treasor._y = 10;
+	//_data [_treasor._x][_treasor._y] = 1;	// indiquer qu'on ne marche pas sur le tr�sor.
 	// le chasseur et les 4 gardiens.
+	/*
 	_nguards = 5;
 	_guards = new Mover* [_nguards];
 	_guards [0] = new Chasseur (this);
@@ -221,9 +363,13 @@ Labyrinthe::Labyrinthe (char* filename)
 	_guards [2] = new Gardien (this, "Blade"); _guards [2] -> _x = 90.; _guards [2] -> _y = 70.;
 	_guards [3] = new Gardien (this, "Serpent"); _guards [3] -> _x = 60.; _guards [3] -> _y = 10.;
 	_guards [4] = new Gardien (this, "Samourai"); _guards [4] -> _x = 130.; _guards [4] -> _y = 100.;
+	*/
 	// indiquer qu'on ne marche pas sur les gardiens.
+	/*
 	_data [(int)(_guards [1] -> _x / scale)][(int)(_guards [1] -> _y / scale)] = 1;
 	_data [(int)(_guards [2] -> _x / scale)][(int)(_guards [2] -> _y / scale)] = 1;
 	_data [(int)(_guards [3] -> _x / scale)][(int)(_guards [3] -> _y / scale)] = 1;
 	_data [(int)(_guards [4] -> _x / scale)][(int)(_guards [4] -> _y / scale)] = 1;
+	*/
+	cout<<"fin laby"<<endl;
 }
