@@ -18,7 +18,6 @@ Environnement* Environnement::init (char* filename)
 	return new Labyrinthe (filename);
 }
 
-
 void scan_laby (Labyrinthe* l,ifstream& file)
 {
 	struct Coord
@@ -94,8 +93,8 @@ void scan_laby (Labyrinthe* l,ifstream& file)
 			{
 				case 'G': //si on tombe sur un G on rajoute le chasseur
 					Guards.push_back(new Gardien(l,"Lezard"));
-					Guards.back()->_x = (float)x;
-					Guards.back()->_y = (float)i;
+					Guards.back()->_x = ((float) x)*((float) l->scale);
+					Guards.back()->_y = ((float)i) * ((float) l->scale);
 					l->_nguards++;
 				break;
 
@@ -105,13 +104,13 @@ void scan_laby (Labyrinthe* l,ifstream& file)
 				break;
 
 				case 'T':
-					l->_treasor._x = x;
-					l->_treasor._y = i;
+					l->_treasor._x = i ;
+					l->_treasor._y = x ;
 				break;
 
 				case 'C':// les caisses
-					Guards[0]->_x = (float) (x);
-					Guards[0]->_y = (float) (i);
+					Guards[0]->_x = ((float) x) * ((float) l->scale);
+					Guards[0]->_y = (float) (i) * ((float) l->scale);
 				break;
 				case '+':
 					murs_vert.push_back({x,i});//on ajoute ce plus dans la liste des potentiel murs verticaux
@@ -153,6 +152,15 @@ void scan_laby (Labyrinthe* l,ifstream& file)
 	//on affiche la liste des murs créers
 	for (int i = 0; i < l->_nwall; i++)
 	{
+		/*necessaire car le système de coordonnée 
+		utilisé dans le fichier est l'inverse de celui du prog*/
+		int tmp = walls.at(i)._x1;
+		walls.at(i)._x1 = walls.at(i)._y1;
+		walls.at(i)._y1 = tmp;
+		tmp = walls.at(i)._x2;
+		walls.at(i)._x2 = walls.at(i)._y2;
+		walls.at(i)._y2 = tmp;
+		// On copie maintenant le mur corrigé dans l'objet labyrinthe
 		(l->_walls)[i] = walls.at(i);
 		cout<<"Wall n°"<<i<<": "<<(l->_walls)[i]._x1<<","<<(l->_walls)[i]._y1<<" : "<<(l->_walls)[i]._x2<<","<<(l->_walls)[i]._y2<<":"<<(l->_walls)[i]._ntex<<endl;
 		
@@ -164,6 +172,11 @@ void scan_laby (Labyrinthe* l,ifstream& file)
 	l->_boxes = new Box[l->_nboxes];
 	for (int i = 0; i < l->_nboxes; i++)
 	{
+		//inversion des coords
+		int tmp = caisses[i]._x;
+		caisses[i]._x = caisses[i]._y;
+		caisses[i]._y = tmp;
+		//////////////////////
 		l->_boxes[i] = caisses[i];
 		cout<<"{"<<(caisses)[i]._x<<","<<(caisses)[i]._y<<"}"<<endl;
 	}
@@ -174,6 +187,13 @@ void scan_laby (Labyrinthe* l,ifstream& file)
 	l->_guards = new Mover*[l->_nguards];
 	for(int i = 0; i < l->_nguards; i++)
 	{
+		//inversion des coords
+		float tmp = Guards[i]->_x;
+		Guards[i]->_x = Guards[i]->_y;
+		Guards[i]->_y = tmp;
+
+
+		//////////////////////
 		l->_guards[i] = Guards[i];
 		cout<<"Guard "<<l->_guards[i]<<": "<<(l->_guards[i])->_x<<","<<(l->_guards[i])->_y<<endl;
 	}
@@ -204,9 +224,15 @@ Labyrinthe::Labyrinthe (char* filename)
 		scan_laby(this,file);
 
 		//initialisation de _data
+		for(int i = 0; i < LAB_WIDTH; i++)
+		{
+			for(int j = 0; j < LAB_HEIGHT; j++)
+			{
+				_data[i][j] = EMPTY;
+			}
+		}
 		//mise a jour des data pour
 		//les murs:
-		/*
 		for (int cpt = 0; cpt < _nwall; cpt++)
 		{
 			Wall w = _walls[cpt];
@@ -214,32 +240,35 @@ Labyrinthe::Labyrinthe (char* filename)
 			if(w._x1 == w._x2)
 			{
 				for(int i = w._y1; i<w._y2; i++)
-					_data[w._x1][i] = 1;
+				{
+					_data[w._x1][i] = '1';
+					cout<<w._x1<<','<<i<<endl;
+				}
 			}else if (w._y1 == w._y2){
 				for(int i = w._x1; i<w._x2; i++)
-					_data[i][w._y1] = 1;
+				{
+					_data[i][w._y1] = '1';
+					cout<<i<<','<<w._y1<<endl;
+				}
 			}
 			cout<<"fin mur "<<cpt<<endl;
 		}
-		*/
 		//les boites
 		for(int i = 0; i < _nboxes; i++)
 		{
 			Box b = _boxes[i];
-			_data[b._x][b._y] = 1;
+			_data[b._x][b._y] = '1';
 		}
 		
 		//le trésor
-		_data[_treasor._x][_treasor._y] = 1;
+		_data[_treasor._x][_treasor._y] = '1';
 		//guardes
-		/*
 		for(int i = 1; i < _nguards ; i++)
 		{
 			Mover* m = _guards[i];
-			_data[(int)(m->_x/scale)][(int)(m->_y/scale)] = 1;
+			_data[(int)(m->_x/scale)][(int)(m->_y/scale)] = '1';
 
 		}
-		*/
 		cout<<"fin du test"<<endl;
 		file.close();
 		cout<<endl<<endl<<"============================================================================================"<<endl;
@@ -371,5 +400,6 @@ Labyrinthe::Labyrinthe (char* filename)
 	_data [(int)(_guards [3] -> _x / scale)][(int)(_guards [3] -> _y / scale)] = 1;
 	_data [(int)(_guards [4] -> _x / scale)][(int)(_guards [4] -> _y / scale)] = 1;
 	*/
-	cout<<"fin laby"<<endl;
+	cout<<"fin chargement labyrinthe"<<endl<<"appuie sur une touche"<<endl;
+	getchar();
 }
