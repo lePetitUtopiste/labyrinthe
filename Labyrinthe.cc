@@ -50,7 +50,7 @@ void scan_laby (Labyrinthe* l,ifstream& file)
 	{
 		cout<<"lecture ligne "<<x<<endl<<line<<endl;
 		bool mur_en_cours = false;
-		//Wall mur = {0,0,0,0,0};
+		Wall mur = {0,0,0,0,0};
 		Coord debut = {0,0};
 		//recherche de mur verticaux
 		auto iter = murs_vert.begin();
@@ -68,7 +68,7 @@ void scan_laby (Labyrinthe* l,ifstream& file)
 			int y1 = (*iter).y;
 			switch(line[(*iter).y])
 			{
-				case '|'://si il y a un | on ne fait rien
+				default://si il y a un | on ne fait rien
 					cout<<"mur potentiel en"<<x1<<","<<y1<<endl;
 					iter ++;
 				break;
@@ -79,7 +79,7 @@ void scan_laby (Labyrinthe* l,ifstream& file)
 					iter = murs_vert.erase(iter); //on retire le +
 				break;
 
-				default://s'il n'y a rien on retire ce + de la liste des coord à verifier il n'y a pas de mur vertical à cette pos
+				case ' '://s'il n'y a rien on retire ce + de la liste des coord à verifier il n'y a pas de mur vertical à cette pos
 					iter = murs_vert.erase(iter);
 				break;
 			}
@@ -120,7 +120,7 @@ void scan_laby (Labyrinthe* l,ifstream& file)
 						cout<<"ajout du mur "<<debut.x<<","<<debut.y<<" ; "<<x<<","<<i<<endl;
 						walls.push_back({debut.x,debut.y,x,i,0});//on copie dans le tableau);
 						l->_nwall ++;
-						if(i < line.size() - 1 && line[i+1] == '-')//si un mur continu après
+						if(i < line.size() - 1 && (line[i+1] == '-' || line[i+1] == '+'))//si un mur peut continuer après
 						{
 							debut.x = x;
 							debut.y = i;
@@ -129,7 +129,7 @@ void scan_laby (Labyrinthe* l,ifstream& file)
 							mur_en_cours = false;
 						}
 					}else{
-						if(i < line.size() - 1 && line[i+1] == '-')
+						//if(i < line.size() - 1)
 						{
 							//on initialise le début du mur
 							cout<<"début de mur trouvé en "<<x<<","<<i<<endl;
@@ -141,13 +141,11 @@ void scan_laby (Labyrinthe* l,ifstream& file)
 				break;		
 			}
 		}
-		cout<<"fin analyse ligne"<<endl;
+		//cout<<"fin analyse ligne"<<endl;
 		x++;//on passe à la ligne suivante
 	}
-	cout<<"fin de la recherche et affichage des résultats"<<endl;
-	cout<<"murs trouves: "<<l->_nwall<<endl;
-	//walls.shrink_to_fit();
-	//l->_walls = walls->data();
+	//cout<<"fin de la recherche et affichage des résultats"<<endl;
+	//cout<<"murs trouves: "<<l->_nwall<<endl;
 	l->_walls = new Wall[l->_nwall];
 	//on affiche la liste des murs créers
 	for (int i = 0; i < l->_nwall; i++)
@@ -162,11 +160,11 @@ void scan_laby (Labyrinthe* l,ifstream& file)
 		walls.at(i)._y2 = tmp;
 		// On copie maintenant le mur corrigé dans l'objet labyrinthe
 		(l->_walls)[i] = walls.at(i);
-		cout<<"Wall n°"<<i<<": "<<(l->_walls)[i]._x1<<","<<(l->_walls)[i]._y1<<" : "<<(l->_walls)[i]._x2<<","<<(l->_walls)[i]._y2<<":"<<(l->_walls)[i]._ntex<<endl;
+		//cout<<"Wall n°"<<i<<": "<<(l->_walls)[i]._x1<<","<<(l->_walls)[i]._y1<<" : "<<(l->_walls)[i]._x2<<","<<(l->_walls)[i]._y2<<":"<<(l->_walls)[i]._ntex<<endl;
 		
 	}
 
-	cout<<"caisses trouvees: "<<l->_nboxes<<endl;
+	//cout<<"caisses trouvees: "<<l->_nboxes<<endl;
 	//caisses->shrink_to_fit();
 	//l->_boxes = caisses->data();
 	l->_boxes = new Box[l->_nboxes];
@@ -178,10 +176,10 @@ void scan_laby (Labyrinthe* l,ifstream& file)
 		caisses[i]._y = tmp;
 		//////////////////////
 		l->_boxes[i] = caisses[i];
-		cout<<"{"<<(caisses)[i]._x<<","<<(caisses)[i]._y<<"}"<<endl;
+		//cout<<"{"<<(caisses)[i]._x<<","<<(caisses)[i]._y<<"}"<<endl;
 	}
 
-	cout<<"guardes trouves: "<<l->_nguards<<endl;
+	//cout<<"guardes trouves: "<<l->_nguards<<endl;
 	//Guards->shrink_to_fit();
 	//l->_guards = Guards->data();
 	l->_guards = new Mover*[l->_nguards];
@@ -191,17 +189,20 @@ void scan_laby (Labyrinthe* l,ifstream& file)
 		float tmp = Guards[i]->_x;
 		Guards[i]->_x = Guards[i]->_y;
 		Guards[i]->_y = tmp;
-
-
 		//////////////////////
 		l->_guards[i] = Guards[i];
-		cout<<"Guard "<<l->_guards[i]<<": "<<(l->_guards[i])->_x<<","<<(l->_guards[i])->_y<<endl;
+		//cout<<"Guard "<<l->_guards[i]<<": "<<(l->_guards[i])->_x<<","<<(l->_guards[i])->_y<<endl;
 	}
 
-	cout<<"marques au sol trouvees: "<<l->_nmarks<<endl;
+	//cout<<"marques au sol trouvees: "<<l->_nmarks<<endl;
 	l->_marks = new Box[l->_nmarks];
 	for(int i = 0; i < l->_nmarks; i++)
 	{
+		//inversion des coordonnées:
+		int temp = marques[i]._x;
+		marques[i]._x = marques[i]._y;
+		marques[i]._y = temp;
+		//
 		l->_marks[i] = marques[i];
 	}
 
@@ -226,7 +227,7 @@ Labyrinthe::Labyrinthe (char* filename)
 		//initialisation de _data
 		for(int i = 0; i < LAB_WIDTH; i++)
 		{
-			for(int j = 0; j < LAB_HEIGHT; j++)
+			for (int j = 0; j < LAB_HEIGHT ; j++)
 			{
 				_data[i][j] = EMPTY;
 			}
@@ -236,22 +237,22 @@ Labyrinthe::Labyrinthe (char* filename)
 		for (int cpt = 0; cpt < _nwall; cpt++)
 		{
 			Wall w = _walls[cpt];
-			cout<<"mur "<<cpt<<endl<<endl;
+			//cout<<"mur "<<cpt<<endl<<endl;
 			if(w._x1 == w._x2)
 			{
-				for(int i = w._y1; i<w._y2; i++)
+				for(int i = w._y1; i<=w._y2; i++)
 				{
 					_data[w._x1][i] = '1';
-					cout<<w._x1<<','<<i<<endl;
+					//cout<<w._x1<<','<<i<<endl;
 				}
 			}else if (w._y1 == w._y2){
-				for(int i = w._x1; i<w._x2; i++)
+				for(int i = w._x1; i<=w._x2; i++)
 				{
 					_data[i][w._y1] = '1';
-					cout<<i<<','<<w._y1<<endl;
+					//cout<<i<<','<<w._y1<<endl;
 				}
 			}
-			cout<<"fin mur "<<cpt<<endl;
+			//cout<<"fin mur "<<cpt<<endl;
 		}
 		//les boites
 		for(int i = 0; i < _nboxes; i++)
@@ -259,7 +260,6 @@ Labyrinthe::Labyrinthe (char* filename)
 			Box b = _boxes[i];
 			_data[b._x][b._y] = '1';
 		}
-		
 		//le trésor
 		_data[_treasor._x][_treasor._y] = '1';
 		//guardes
@@ -269,7 +269,7 @@ Labyrinthe::Labyrinthe (char* filename)
 			_data[(int)(m->_x/scale)][(int)(m->_y/scale)] = '1';
 
 		}
-		cout<<"fin du test"<<endl;
+		//cout<<"fin du test"<<endl;
 		file.close();
 		cout<<endl<<endl<<"============================================================================================"<<endl;
 		cout<<"Verif des données"<<endl<<endl;
@@ -290,6 +290,14 @@ Labyrinthe::Labyrinthe (char* filename)
 		for(int i = 0; i< _nguards; i++)
 		{
 			cout<<"garde "<<_guards[i]<<": "<<_guards[i]->_x<<","<<_guards[i]->_y<<endl;
+		}
+		for(int j = 0; j < LAB_HEIGHT; j++)
+		{
+			for(int i = 0; i < LAB_WIDTH; i++)
+			{
+				cout<<data(i,j);
+			}
+			cout<<endl;
 		}
 		cout<<"fin verif des données"<<endl;
 		//initialisation des données pour les murs

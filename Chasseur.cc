@@ -1,12 +1,17 @@
 #include "Chasseur.h"
+#include <sstream>
+
+using namespace std;
 
 /*
  *	Tente un deplacement.
  */
-
 bool Chasseur::move_aux (double dx, double dy)
 {
-	if (EMPTY == _l -> data ((int)((_x + dx) / Environnement::scale),
+	char test[100];
+	sprintf(test,"coord: %f,%f | coord2: %d,%d",_x,_y,(int)_x/Environnement::scale,(int)_y/Environnement::scale);
+	message(test);
+	if (!collision || EMPTY == _l -> data ((int)((_x + dx) / Environnement::scale),
 							 (int)((_y + dy) / Environnement::scale)))
 	{
 		_x += dx;
@@ -20,7 +25,7 @@ bool Chasseur::move_aux (double dx, double dy)
  *	Constructeur.
  */
 
-Chasseur::Chasseur (Labyrinthe* l) : Mover (100, 80, l, 0)
+Chasseur::Chasseur (Labyrinthe* l) : Mover (100, 80, l, 0),collision(true)
 {
 	// initialise les sons.
 	_hunter_fire = new Sound ("sons/hunter_fire.wav");
@@ -30,7 +35,7 @@ Chasseur::Chasseur (Labyrinthe* l) : Mover (100, 80, l, 0)
 }
 
 /*
- *	Fait bouger la boule de feu (ceci est une exemple, à vous de traiter les collisions spécifiques...)
+ *	Fait bouger la boule de feu (ceci est une exemple, ï¿½ vous de traiter les collisions spï¿½cifiques...)
  */
 
 bool Chasseur::process_fireball (float dx, float dy)
@@ -65,18 +70,22 @@ void Chasseur::fire (int angle_vertical)
 	message ("Woooshh...");
 	_hunter_fire -> play ();
 	_fb -> init (/* position initiale de la boule */ _x, _y, 10.,
-				 /* angles de visée */ angle_vertical, _angle);
+				 /* angles de visï¿½e */ angle_vertical, _angle);
 }
 
 /*
- *	Clic droit: par défaut fait tomber le premier gardien.
+ *	Clic droit: par dï¿½faut fait tomber le premier gardien.
  *
  *	Inutile dans le vrai jeu, mais c'est juste pour montrer
- *	une utilisation des fonctions « tomber » et « rester_au_sol »
+ *	une utilisation des fonctions ï¿½ tomber ï¿½ et ï¿½ rester_au_sol ï¿½
  */
 
 void Chasseur::right_click (bool shift, bool control)
 {
+	collision =!collision;
+	char test[20];
+	sprintf(test,"collision:%d",collision);
+	message(test);
 	if (shift)
 		_l -> _guards [1] -> rester_au_sol ();
 	else
