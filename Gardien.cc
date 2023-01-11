@@ -90,8 +90,6 @@ bool check_collision(char** _data, float x1, float y1, float x2, float y2)
 
 bool Gardien::move(double dx, double dy)
 {
-    
-
     if(((Labyrinthe*)_l)->data((_x+dx)/Environnement::scale,(_y+dy)/Environnement::scale) != EMPTY)
     {
     
@@ -112,7 +110,7 @@ void Gardien::update()
     float x = _x;///_l->scale;
     float y = _y;///_l->scale;
 
-    float _angle_rad = 180*_angle/M_PI;
+    float _angle_rad = 180*_angle-90/M_PI;
 
     vector dist{};
     dist.init_vector(x,y,p_x,p_y);
@@ -132,15 +130,20 @@ void Gardien::update()
     // cout<<"------------------------------------------------------------------------"
     //     <<endl;
 
-    if(dist.norm() <= FOV)
-        _angle_cible = dist.angle();
-
-    if(_angle_cible != _angle)
-        _angle += (_angle_cible-_angle)*_vitesse_rotation/100;
-
-    if(!move(cos(_angle_rad),sin(_angle_rad)))
+    bool coll = !move(cos(180*(_angle_cible-90)/M_PI),sin(180*(_angle_cible-90)/M_PI));
+    //if(dist.norm() <= FOV)
+        _angle_cible = dist.angle() + 90;
+    /*
+    else if(!coll)
     {
-        _angle += (rand()%5)-5;
+        //_angle_cible = (_angle_cible+(rand()*5) + 90);
     }
+    */
+    if(_angle_cible != _angle)
+        _angle += (_angle_cible-_angle)*15/100;
+    
+    char test[100];
+    sprintf(test,"Guard: angle:%d|cible:%d\nDist:angle:%d| %d",_angle,_angle_cible,dist.angle(),coll);
+    message(test);
 
 }

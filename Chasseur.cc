@@ -8,9 +8,11 @@ using namespace std;
  */
 bool Chasseur::move_aux (double dx, double dy)
 {
+	/*Debug coord
 	char test[100];
 	sprintf(test,"coord: %f,%f | coord2: %d,%d",_x,_y,(int)_x/Environnement::scale,(int)_y/Environnement::scale);
 	message(test);
+	*/
 	if (!collision || EMPTY == _l -> data ((int)((_x + dx) / Environnement::scale),
 							 (int)((_y + dy) / Environnement::scale)))
 	{
