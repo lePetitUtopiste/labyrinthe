@@ -12,7 +12,10 @@ using namespace std;
 Sound*	Chasseur::_hunter_fire;	// bruit de l'arme du chasseur.
 Sound*	Chasseur::_hunter_hit;	// cri du chasseur touch�.
 Sound*	Chasseur::_wall_hit;	// on a tap� un mur.
-
+Sound*	Gardien::_Guard_hit;	// cri du chasseur touch�.
+Sound*	Gardien::_wall_hit;	// on a tap� un mur.
+Sound*	Gardien::_Guard_fire;	// bruit de l'arme du chasseur.
+Sound* Gardien::_Guard_death;
 Environnement* Environnement::init (char* filename)
 {
 	return new Labyrinthe (filename);
@@ -223,7 +226,11 @@ Labyrinthe::Labyrinthe (char* filename)
 			cout<<line<<endl;
 		}
 		scan_laby(this,file);
-
+		//Initialisation du son des Gardiens
+		Gardien::_Guard_fire = new Sound("sons/guard_fire.wav");
+		Gardien::_Guard_death = new Sound("sons/guard_die.wav");
+		Gardien::_Guard_hit = new Sound("sons/guard_hit.wav");
+		////////////////////////////////////
 		//initialisation de _data
 		for(int i = 0; i < LAB_WIDTH; i++)
 		{
@@ -261,7 +268,7 @@ Labyrinthe::Labyrinthe (char* filename)
 			_data[b._x][b._y] = '1';
 		}
 		//le trésor
-		_data[_treasor._x][_treasor._y] = '1';
+		//_data[_treasor._x][_treasor._y] = '1';
 		//guardes
 		for(int i = 1; i < _nguards ; i++)
 		{
@@ -409,5 +416,4 @@ Labyrinthe::Labyrinthe (char* filename)
 	_data [(int)(_guards [4] -> _x / scale)][(int)(_guards [4] -> _y / scale)] = 1;
 	*/
 	cout<<"fin chargement labyrinthe"<<endl<<"appuie sur une touche"<<endl;
-	getchar();
 }

@@ -1,5 +1,7 @@
 #include "Chasseur.h"
+#include "Gardien.h"
 #include <sstream>
+#include <iostream>
 
 using namespace std;
 
@@ -8,11 +10,15 @@ using namespace std;
  */
 bool Chasseur::move_aux (double dx, double dy)
 {
-	/*Debug coord
+	//Debug coord
 	char test[100];
 	sprintf(test,"coord: %f,%f | coord2: %d,%d",_x,_y,(int)_x/Environnement::scale,(int)_y/Environnement::scale);
 	message(test);
-	*/
+	if ((int)_x/Environnement::scale == _l->_treasor._x && (int) _y/Environnement::scale == _l->_treasor._y)
+		partie_terminee(true);
+	else
+		cout<<_x/Environnement::scale<<","<<_y/Environnement::scale<<endl;
+		//cout<<_l->_treasor._x<<","<<_l->_treasor._y<<endl;
 	if (!collision || EMPTY == _l -> data ((int)((_x + dx) / Environnement::scale),
 							 (int)((_y + dy) / Environnement::scale)))
 	{
@@ -26,12 +32,10 @@ bool Chasseur::move_aux (double dx, double dy)
 /*
  *	Constructeur.
  */
-
-Chasseur::Chasseur (Labyrinthe* l) : Mover (100, 80, l, 0),collision(true)
+Chasseur::Chasseur (Labyrinthe* l) : Entity(100, 80, l, 0,10),collision(true)
 {
-	// initialise les sons.
-	_hunter_fire = new Sound ("sons/hunter_fire.wav");
-	_hunter_hit = new Sound ("sons/hunter_hit.wav");
+	_hunter_fire = new Sound ("sons/hunter_fire.wav");	// bruit de l'arme du chasseur.
+	_hunter_hit = new Sound ("sons/hunter_hit.wav");	// cri du chasseur touch�.
 	if (_wall_hit == 0)
 		_wall_hit = new Sound ("sons/hit_wall.wav");
 }
@@ -59,6 +63,21 @@ bool Chasseur::process_fireball (float dx, float dy)
 	float	dmax2 = (_l -> width ())*(_l -> width ()) + (_l -> height ())*(_l -> height ());
 	// faire exploser la boule de feu avec un bruit fonction de la distance.
 	_wall_hit -> play (1. - dist2/dmax2);
+	//on verifie si la boule a touché un garde
+	cout<<_fb->get_x()<<";"<<_fb->get_y()
+	<<"|"<<(int)_fb->get_x()/Environnement::scale<<";"<<(int)_fb->get_y()/Environnement::scale<<endl;
+	for(int i = 1; i < _l->_nguards; i++)
+	{
+		int x = _l->_guards[i]->_x/Environnement::scale;
+		int y = _l->_guards[i]->_y/Environnement::scale;
+		cout<<"Verif: "<<x<<";"<<y<<endl;
+		if((int)((_fb->get_x() + dx)/Environnement::scale) == x && (int)((_fb->get_y() + dy)/Environnement::scale) == y)
+		{
+			cout<<"touché"<<endl;
+			Gardien::_Guard_death->play();
+			((Entity*)(_l->_guards[i]))->degat(10);
+		}
+	}
 	message ("Booom...");
 	return false;
 }
@@ -85,11 +104,17 @@ void Chasseur::fire (int angle_vertical)
 void Chasseur::right_click (bool shift, bool control)
 {
 	collision =!collision;
-	char test[20];
-	sprintf(test,"collision:%d",collision);
-	message(test);
+	//char test[20];
+	//sprintf(test,"collision:%d",collision);
+	//message(test);
 	if (shift)
 		_l -> _guards [1] -> rester_au_sol ();
 	else
 		_l -> _guards [1] -> tomber ();
+}
+
+void Chasseur::update()
+{
+	if(est_mort())
+		partie_terminee(false);
 }

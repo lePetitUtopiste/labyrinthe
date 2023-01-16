@@ -7,16 +7,16 @@
 
 class Labyrinthe;
 
-class Chasseur : public Mover {
+class Chasseur : public Entity {
 private:
 	// accepte ou non un deplacement.
 	bool move_aux (double dx, double dy);
 	bool collision;
 public:
 	// les sons.
-	static Sound*	_hunter_fire;	// bruit de l'arme du chasseur.
 	static Sound*	_hunter_hit;	// cri du chasseur touch�.
-	static Sound*	_wall_hit;		// on a tap� un mur.
+	static Sound*	_wall_hit;	// on a tap� un mur.
+	static Sound*	_hunter_fire;	// bruit de l'arme du chasseur.
 
 	// constructeur.
 	Chasseur (Labyrinthe* l);
@@ -25,7 +25,7 @@ public:
 		return move_aux (dx, dy) || move_aux (dx, 0.0) || move_aux (0.0, dy);
 	}
 	// le chasseur ne pense pas!
-	void update (void) {};
+	void update (void);
 	// fait bouger la boule de feu (ceci est une exemple, � vous de traiter les collisions sp�cifiques...)
 	bool process_fireball (float dx, float dy);
 	// tire sur un ennemi.

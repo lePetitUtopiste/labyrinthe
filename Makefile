@@ -10,7 +10,7 @@ EXE = .exe
 LD = ld
 RM = del
 CXX = g++
-CXXFLAGS =		-Wall -g $(OPT)
+CXXFLAGS =		-Wall $(OPT)
 
 CONSOLE =		-Wl,--subsystem,console
 LINKFLTK_IMG =	$(CONSOLE) -mwindows -L$(FLTK_VERSION) \
