@@ -144,12 +144,20 @@ bool Gardien::move(double dx, double dy)
 bool Gardien::process_fireball(float dx, float dy)
 {
 // calculer la distance entre le chasseur et le lieu de l'explosion.
-	float	x = (_x - _fb -> get_x ()) / Environnement::scale;
-	float	y = (_y - _fb -> get_y ()) / Environnement::scale;
-	float	dist2 = x*x + y*y;
-	// on bouge que dans le vide!
+	int px = _l->_guards[0]->_x/Environnement::scale;
+    int py = _l->_guards[0]->_y/Environnement::scale;
+
+    int x = _fb->get_x()/Environnement::scale;
+    int y = _fb->get_y()/Environnement::scale;
+
+    float dist = (vector{px - x, py - y}).norm();
+
+    message("dist:%f",dist);
+
 	if (EMPTY == _l -> data ((int)((_fb -> get_x () + dx) / Environnement::scale),
-							 (int)((_fb -> get_y () + dy) / Environnement::scale)))
+							 (int)((_fb -> get_y () + dy) / Environnement::scale))
+                             && dist > 1)
+
 	{
 		//message ("Woooshh ..... %d", (int) dist2);
 		// il y a la place.
@@ -161,10 +169,8 @@ bool Gardien::process_fireball(float dx, float dy)
 	// faire exploser la boule de feu avec un bruit fonction de la distance.
 	//_wall_hit -> play (1. - dist2/dmax2);
 	//on verifie si la boule a touché le joueur
-    int px = _l->_guards[0]->_x/Environnement::scale;
-    int py = _l->_guards[0]->_y/Environnement::scale;
     //cout<<"Verif: "<<x<<";"<<y<<endl;
-    if((int)((_fb->get_x())/Environnement::scale) == px && (int)((_fb->get_y())/Environnement::scale) == py)
+    if( dist <= 1)
     {
         cout<<"touché"<<endl;
         Chasseur::_hunter_hit->play();
@@ -182,12 +188,19 @@ void Gardien::fire(int angle_vertical)
     tire = true;
 	_Guard_fire -> play ();
 	_fb -> init (/* position initiale de la boule */ _x, _y, 10.,
-				 /* angles de vis�e */ angle_vertical, _angle);
+				 /* angles de vis�e */ angle_vertical, (-_angle_cible));
 }
 
 void Gardien::update()
 {
-    if(est_mort())
+    if(est_mort() == 1)
+    {
+        //si il vient de mourir, on le met au sol et on le détruit
+        rester_au_sol();
+        despawn();
+        return;
+    }else if(est_traite())//si on a déjà réalisé l'appel à despawn
+                          //on se contente d'arrêter update
     {
         return;
     }
@@ -224,7 +237,9 @@ void Gardien::update()
     {
         _angle_cible = dist.angle() - 90; 
         if(!tire)
-            fire(0);
+        {
+            //fire(0);
+        }
     }   
 
     else if(coll)
@@ -237,8 +252,8 @@ void Gardien::update()
     if(_angle_cible != _angle)
         _angle =  (1-_vitesse_rotation) * _angle + _vitesse_rotation * _angle_cible;
     
-    char test[100];
-    sprintf(test,"Guard: angle:%d|cible:%d\nDist: %f angle:%d| %d",_angle,_angle_cible,dist.norm(),dist.angle(),coll);
-    message(test);
+    //char test[100];
+    //sprintf(test,"Guard: angle:%d|cible:%d\nDist: %f angle:%d| %d",_angle,_angle_cible,dist.norm(),dist.angle(),coll);
+    //message(test);
 
 }

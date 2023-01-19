@@ -16,11 +16,33 @@ Sound*	Gardien::_Guard_hit;	// cri du chasseur touch�.
 Sound*	Gardien::_wall_hit;	// on a tap� un mur.
 Sound*	Gardien::_Guard_fire;	// bruit de l'arme du chasseur.
 Sound* Gardien::_Guard_death;
+
 Environnement* Environnement::init (char* filename)
 {
 	return new Labyrinthe (filename);
 }
 
+
+
+void scan_test(Labyrinthe* l, ifstream& file)
+{
+	char input = ' ';
+	string ligne = "";
+	while (getline(file,ligne))
+	{
+		for(int i = 0; i < ligne.size(); i++)
+		{
+			input = ligne[i];
+			switch (input)
+			{	
+			
+			default:
+				
+				break;
+			}
+		}
+	}
+}
 void scan_laby (Labyrinthe* l,ifstream& file)
 {
 	struct Coord

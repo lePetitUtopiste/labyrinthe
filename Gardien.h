@@ -15,7 +15,7 @@ public:
 	static Sound*	_Guard_fire;	// bruit de l'arme du chasseur.
 	static Sound* _Guard_death;
 
-	const int FOV = 0;
+	const int FOV = 100;
 	int _angle_cible;
 	const float _speed = 0.5;
 	//pourcentage de l'écart actuel a parcourir à chaque update

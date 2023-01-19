@@ -1,5 +1,6 @@
 #include "Chasseur.h"
 #include "Gardien.h"
+#include <math.h>
 #include <sstream>
 #include <iostream>
 
@@ -16,10 +17,7 @@ bool Chasseur::move_aux (double dx, double dy)
 	message(test);
 	if ((int)_x/Environnement::scale == _l->_treasor._x && (int) _y/Environnement::scale == _l->_treasor._y)
 		partie_terminee(true);
-	else
-		cout<<_x/Environnement::scale<<","<<_y/Environnement::scale<<endl;
-		//cout<<_l->_treasor._x<<","<<_l->_treasor._y<<endl;
-	if (!collision || EMPTY == _l -> data ((int)((_x + dx) / Environnement::scale),
+	else if (!collision || EMPTY == _l -> data ((int)((_x + dx) / Environnement::scale),
 							 (int)((_y + dy) / Environnement::scale)))
 	{
 		_x += dx;
@@ -47,10 +45,27 @@ Chasseur::Chasseur (Labyrinthe* l) : Entity(100, 80, l, 0,10),collision(true)
 bool Chasseur::process_fireball (float dx, float dy)
 {
 	// calculer la distance entre le chasseur et le lieu de l'explosion.
-	float	x = (_x - _fb -> get_x ()) / Environnement::scale;
-	float	y = (_y - _fb -> get_y ()) / Environnement::scale;
+	float	x = (_fb -> get_x ()) / Environnement::scale;
+	float	y = (_fb -> get_y ()) / Environnement::scale;
 	float	dist2 = x*x + y*y;
-	// on bouge que dans le vide!
+	
+	//pour chaque garde
+	for(int i = 1; i < _l->_nguards; i++)
+	{
+		Gardien* g = (Gardien*)_l->_guards[i]; 
+		int g_x = ( g->_x) / Environnement::scale;
+		int g_y = ( g->_y) / Environnement::scale;
+
+		float dist = sqrt((g_x - x)*(g_x - x) + (g_y - y)*(g_y - y));
+		if(dist <= 1) // si la boule est à distance plus basse que 1
+		{
+			//on joue le son et on inflige des dégats
+			g->_Guard_death->play();
+			g->degat(10);
+			return false;//on retourne 0 pour détruire la fb
+		}
+	}
+	//si on a pas touché de garde, on verifie que la fb ne touche pas de mur
 	if (EMPTY == _l -> data ((int)((_fb -> get_x () + dx) / Environnement::scale),
 							 (int)((_fb -> get_y () + dy) / Environnement::scale)))
 	{
@@ -63,21 +78,6 @@ bool Chasseur::process_fireball (float dx, float dy)
 	float	dmax2 = (_l -> width ())*(_l -> width ()) + (_l -> height ())*(_l -> height ());
 	// faire exploser la boule de feu avec un bruit fonction de la distance.
 	_wall_hit -> play (1. - dist2/dmax2);
-	//on verifie si la boule a touché un garde
-	cout<<_fb->get_x()<<";"<<_fb->get_y()
-	<<"|"<<(int)_fb->get_x()/Environnement::scale<<";"<<(int)_fb->get_y()/Environnement::scale<<endl;
-	for(int i = 1; i < _l->_nguards; i++)
-	{
-		int x = _l->_guards[i]->_x/Environnement::scale;
-		int y = _l->_guards[i]->_y/Environnement::scale;
-		cout<<"Verif: "<<x<<";"<<y<<endl;
-		if((int)((_fb->get_x() + dx)/Environnement::scale) == x && (int)((_fb->get_y() + dy)/Environnement::scale) == y)
-		{
-			cout<<"touché"<<endl;
-			Gardien::_Guard_death->play();
-			((Entity*)(_l->_guards[i]))->degat(10);
-		}
-	}
 	message ("Booom...");
 	return false;
 }
