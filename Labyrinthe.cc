@@ -6,6 +6,13 @@
 #include <string>
 #include <vector>
 #include <list>
+#include <map>
+
+#ifdef _WIN32
+#define SEPARATOR '\\'
+#else
+#define SEPARATOR '/'
+#endif
 
 using namespace std;
 
@@ -23,27 +30,65 @@ Environnement* Environnement::init (char* filename)
 }
 
 
-
-void scan_test(Labyrinthe* l, ifstream& file)
+/**
+ * @brief va chercher les fichiers nécessaires pour les textures
+ * 
+ * @param l le labyrinthe
+ * @param file le fichier utilisé pour charger le labyrinthe
+ * @warning va arrêter la lecture aau premier '+' rencontré dans
+ * le fichier donné
+ */
+void scan_test(Labyrinthe* l, ifstream& file, map<char,int>& table_texture)
 {
-	char input = ' ';
-	string ligne = "";
-	while (getline(file,ligne))
+
+	//string ligne;
+	string cible(l->texture_dir);
+	char input = file.get();
+	char nom = '\n';
+	//int cpt = 0;
+	while (input != '+')
 	{
-		for(int i = 0; i < ligne.size(); i++)
+		if (isalpha(input) && nom == '\n') // la première lettre qu'on croise est le nom de l'affiche
 		{
-			input = ligne[i];
-			switch (input)
-			{	
-			
-			default:
-				
-				break;
+			nom = input; //on stocke le nom
+		}else if (input != ' ' && input != '	' && input != '#'){
+			cible.push_back(input);
+		}
+
+		//si on termine la ligne
+		if(input == '\n' || input == '#')
+		{
+			//si on a trouvé un fichier on rempli la table_texture
+			if (nom != '\n')
+			{
+				cible.shrink_to_fit();
+				cout<<nom<<":"<<cible<<"|"<<endl;
+				char data[cible.size()];
+				strcpy(data,cible.c_str());
+				int ntex = l->wall_texture(data);
+				cout<<ntex<<endl;
+				table_texture[nom] = ntex;
+				cout<<"result"<<table_texture[nom]<<endl;
+			}
+			//on reinitialise le tout
+			nom = '\n'; 
+			//cible.clear();
+			cible.assign(l->texture_dir);
+			cible.push_back('\\');
+			//si il s'agissait d'un # on avance le curseur jusqu'au début de la ligne suivante
+			if(input == '#')
+			{
+				while (input != '\n')
+					input = file.get();
 			}
 		}
+			input = file.get();
+
 	}
+	file.unget();
+	return;
 }
-void scan_laby (Labyrinthe* l,ifstream& file)
+void scan_laby (Labyrinthe* l,ifstream& file, map<char,int> table_texture)
 {
 	struct Coord
 	{
@@ -54,6 +99,8 @@ void scan_laby (Labyrinthe* l,ifstream& file)
 		}
 	};
 
+	vector<Wall> picts;
+	l->_npicts = 0;
 	vector<Wall> walls;
 	l->_nwall = 0;
 	vector<Box> caisses;
@@ -61,7 +108,7 @@ void scan_laby (Labyrinthe* l,ifstream& file)
 	vector<Box> marques;
 	l->_nmarks = 0;
 	vector<Mover*> Guards;
-	Guards.push_back(new Chasseur(l));
+	Guards.push_back(new Chasseur(l));//création du chasseur
 	l->_nguards = 1;
 	
 
@@ -93,7 +140,13 @@ void scan_laby (Labyrinthe* l,ifstream& file)
 			int y1 = (*iter).y;
 			switch(line[(*iter).y])
 			{
-				default://si il y a un | on ne fait rien
+				default:
+					if(isalpha(line[(*iter).y]))
+					{
+						(l->_npicts)++;
+						picts.push_back({x1,y1,x1+1,y1,table_texture[line[(*iter).y]]});
+					}
+				case '|'://si il y a un | on ne fait rien
 					cout<<"mur potentiel en"<<x1<<","<<y1<<endl;
 					iter ++;
 				break;
@@ -163,7 +216,15 @@ void scan_laby (Labyrinthe* l,ifstream& file)
 							mur_en_cours = true; //on inidique qu'on commence à lire un mur
 						}
 					}
-				break;		
+				break;
+
+				default:
+					if(isalpha(c))
+					{
+						(l->_npicts)++;
+						picts.push_back({x,i,x,i+1,table_texture[c]});
+					}
+				break;	
 			}
 		}
 		//cout<<"fin analyse ligne"<<endl;
@@ -185,6 +246,24 @@ void scan_laby (Labyrinthe* l,ifstream& file)
 		walls.at(i)._y2 = tmp;
 		// On copie maintenant le mur corrigé dans l'objet labyrinthe
 		(l->_walls)[i] = walls.at(i);
+		//cout<<"Wall n°"<<i<<": "<<(l->_walls)[i]._x1<<","<<(l->_walls)[i]._y1<<" : "<<(l->_walls)[i]._x2<<","<<(l->_walls)[i]._y2<<":"<<(l->_walls)[i]._ntex<<endl;
+		
+	}
+
+	l->_picts = new Wall[l->_npicts];
+	//on affiche la liste des murs créers
+	for (int i = 0; i < l->_npicts; i++)
+	{
+		/*necessaire car le système de coordonnée 
+		utilisé dans le fichier est l'inverse de celui du prog*/
+		int tmp = picts.at(i)._x1;
+		picts.at(i)._x1 = picts.at(i)._y1;
+		picts.at(i)._y1 = tmp;
+		tmp = picts.at(i)._x2;
+		picts.at(i)._x2 = picts.at(i)._y2;
+		picts.at(i)._y2 = tmp;
+		// On copie maintenant le mur corrigé dans l'objet labyrinthe
+		(l->_picts)[i] = picts.at(i);
 		//cout<<"Wall n°"<<i<<": "<<(l->_walls)[i]._x1<<","<<(l->_walls)[i]._y1<<" : "<<(l->_walls)[i]._x2<<","<<(l->_walls)[i]._y2<<":"<<(l->_walls)[i]._ntex<<endl;
 		
 	}
@@ -242,12 +321,17 @@ Labyrinthe::Labyrinthe (char* filename)
 		ifstream file;
 		file.open(filename);
 		string line;
+		/*
 		for(int i = 0; i<6; i++)
 		{
 			getline(file,line);
 			cout<<line<<endl;
 		}
-		scan_laby(this,file);
+		*/
+		map <char,int> test;
+		scan_test(this, file, test);
+		getchar();
+		scan_laby(this,file,test);
 		//Initialisation du son des Gardiens
 		Gardien::_Guard_fire = new Sound("sons/guard_fire.wav");
 		Gardien::_Guard_death = new Sound("sons/guard_die.wav");
@@ -319,6 +403,10 @@ Labyrinthe::Labyrinthe (char* filename)
 		for(int i = 0; i< _nguards; i++)
 		{
 			cout<<"garde "<<_guards[i]<<": "<<_guards[i]->_x<<","<<_guards[i]->_y<<endl;
+		}
+		for(int i = 0; i < _npicts; i++)
+		{
+			cout<<"pict "<<i<<": "<<_picts[i]._ntex<<endl;
 		}
 		for(int j = 0; j < LAB_HEIGHT; j++)
 		{
@@ -402,7 +490,7 @@ Labyrinthe::Labyrinthe (char* filename)
 	/* DEB - NOUVEAU */
 	// mettre une autre texture � la deuxi�me caisse.
 	//sprintf (tmp, "%s/%s", texture_dir, "boite.jpg");
-	//caisses [1]._ntex = wall_texture (tmp);
+	//caisses [1]._ntex = 	;
 
 	// mettre les marques au sol.
 	//TODO réutiliser ce code pour varier les textures des marques aux sols
