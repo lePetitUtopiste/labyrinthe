@@ -23,9 +23,9 @@ bool Chasseur::move_aux (double dx, double dy)
 		if (_l -> data ((int)((_x + dx) / Environnement::scale),
 							 (int)((_y + dy) / Environnement::scale)))
 		{
-			int cpt = rand%_l-> _nmarks
-			_x = _l->_marks[cpt]._x
-			_y = _l->_marks[cpt]._y
+			int cpt = rand()%_l-> _nmarks;
+			_x = _l->_marks[cpt]._x;
+			_y = _l->_marks[cpt]._y;
 		}
 		_x += dx;
 		_y += dy;
