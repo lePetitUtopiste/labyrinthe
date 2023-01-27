@@ -245,7 +245,7 @@ void Gardien::update()
     else if(coll)
     {
         int offset = rand()%45;
-        cout<<offset<<endl; 
+        //cout<<offset<<endl; 
         _angle_cible = (_angle_cible+(offset)+90)%360;
     }
 

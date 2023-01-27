@@ -17,15 +17,16 @@ bool Chasseur::move_aux (double dx, double dy)
 	message(test);
 	if ((int)_x/Environnement::scale == _l->_treasor._x && (int) _y/Environnement::scale == _l->_treasor._y)
 		partie_terminee(true);
-	else if (!collision || EMPTY == _l -> data ((int)((_x + dx) / Environnement::scale),
+	else if (!collision || EMPTY >= _l -> data ((int)((_x + dx) / Environnement::scale),
 							 (int)((_y + dy) / Environnement::scale)))
 	{
 		if (_l -> data ((int)((_x + dx) / Environnement::scale),
-							 (int)((_y + dy) / Environnement::scale)))
+							 (int)((_y + dy) / Environnement::scale)) == -1)
 		{
-			int cpt = rand()%_l-> _nmarks;
-			_x = _l->_marks[cpt]._x;
-			_y = _l->_marks[cpt]._y;
+			int cpt = rand()%(_l-> _nmarks);
+			cout<<cpt<<endl;
+			_x = _l->_marks[cpt]._x * Environnement::scale;
+			_y = _l->_marks[cpt]._y * Environnement::scale;
 		}
 		_x += dx;
 		_y += dy;

@@ -350,7 +350,7 @@ Labyrinthe::Labyrinthe (char* filename)
 		//les marques au sol
 		for (int cpt = 0; cpt < _nmarks; cpt++)
 		{
-			_data[_marks[cpt]._x][_marks[cpt]._y] = 2;
+			_data[_marks[cpt]._x][_marks[cpt]._y] = -1;
 		}
 		//les murs:
 		for (int cpt = 0; cpt < _nwall; cpt++)
