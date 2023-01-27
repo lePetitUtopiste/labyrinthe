@@ -3,8 +3,8 @@
 
 #include "Environnement.h"
 
-#define	LAB_WIDTH	95
-#define	LAB_HEIGHT	70
+#define	LAB_WIDTH	94
+#define	LAB_HEIGHT	61
 
 class Labyrinthe : public Environnement {
 private:

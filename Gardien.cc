@@ -90,7 +90,7 @@ bool check_collision(Environnement* l, int x1, int y1, int x2, int y2)
     {
         if(x1 == x2 && y1 == y2)
         {
-            //affiche_data(debug);
+            affiche_data(debug);
             return true;
         }
         float e2 = 2*error;
@@ -98,7 +98,7 @@ bool check_collision(Environnement* l, int x1, int y1, int x2, int y2)
         {
             if(x1 == x2)
             {
-                //affiche_data(debug);
+                affiche_data(debug);
                 return true;
             }
             error = error + dy;
@@ -108,7 +108,7 @@ bool check_collision(Environnement* l, int x1, int y1, int x2, int y2)
         {
             if (y1 == y2)
             {
-                //affiche_data(debug);
+                affiche_data(debug);
                 return true;
             }
             error = error + dx;
@@ -118,9 +118,9 @@ bool check_collision(Environnement* l, int x1, int y1, int x2, int y2)
         debug[(int)x1][(int)y1] = 'O';
         //si on tombe sur une case occupée
         // on arrête la recherche et on renvoie faux
-        if(l->data((int)x1,(int)y1) != EMPTY)
+        if(l->data((int)x1,(int)y1) > EMPTY)
         {
-            //affiche_data(debug);
+            affiche_data(debug);
             return false;
         }
     }

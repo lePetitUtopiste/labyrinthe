@@ -116,13 +116,16 @@ void scan_laby (Labyrinthe* l,ifstream& file, map<char,int> table_texture)
 
 	list<Coord> murs_vert;//liste des murs verticaux en cours de lecture
 
+	list<Coord> picts_vu; // utilisé pour verifier si une marque n'est pas ajoutée 2 fois
+
 	int x = 0;
 	//on parcours le labyrinthe ligne par ligne
 	while(getline(file,line))
 	{
+		picts_vu.clear();
 		cout<<"lecture ligne "<<x<<endl<<line<<endl;
+		
 		bool mur_en_cours = false;
-		Wall mur = {0,0,0,0,0};
 		Coord debut = {0,0};
 		//recherche de mur verticaux
 		auto iter = murs_vert.begin();
@@ -141,10 +144,12 @@ void scan_laby (Labyrinthe* l,ifstream& file, map<char,int> table_texture)
 			switch(line[(*iter).y])
 			{
 				default:
+				//TODO verifier que les lettres ne soit pas comptées 2 fois (vertical + horizontal)
 					if(isalpha(line[(*iter).y]))
 					{
 						(l->_npicts)++;
-						picts.push_back({x1,y1,x1+1,y1,table_texture[line[(*iter).y]]});
+						picts.push_back({x,y1,x+1,y1,table_texture[line[(*iter).y]]});
+						picts_vu.push_back({x,y1});
 					}
 				case '|'://si il y a un | on ne fait rien
 					cout<<"mur potentiel en"<<x1<<","<<y1<<endl;
@@ -221,8 +226,22 @@ void scan_laby (Labyrinthe* l,ifstream& file, map<char,int> table_texture)
 				default:
 					if(isalpha(c))
 					{
-						(l->_npicts)++;
-						picts.push_back({x,i,x,i+1,table_texture[c]});
+						//si on a déjà visité cette affiche
+						bool visite = false;
+						for(auto iter = picts_vu.begin(); iter != picts_vu.end(); iter ++)
+						{
+							if(Coord{x,i} == *iter)
+							{
+								visite = true;
+								break;
+							}
+						}
+						if(!visite)
+						{
+							(l->_npicts)++;
+							picts.push_back({x,i,x,i+1,table_texture[c]});
+						}
+						
 					}
 				break;	
 			}
@@ -382,7 +401,7 @@ Labyrinthe::Labyrinthe (char* filename)
 		//le trésor
 		//_data[_treasor._x][_treasor._y] = '1';
 		//guardes
-		for(int i = 1; i < _nguards ; i++)
+		for(int i = 0; i < _nguards ; i++)
 		{
 			Mover* m = _guards[i];
 			_data[(int)(m->_x/scale)][(int)(m->_y/scale)] = '1';
@@ -412,7 +431,7 @@ Labyrinthe::Labyrinthe (char* filename)
 		}
 		for(int i = 0; i < _npicts; i++)
 		{
-			cout<<"pict "<<i<<": "<<_picts[i]._ntex<<endl;
+			cout<<"pict "<<i<<"["<<_picts[i]._x1<<","<<_picts[i]._y1<<"] : "<<_picts[i]._ntex<<endl;
 		}
 		for(int j = 0; j < LAB_HEIGHT; j++)
 		{
@@ -484,7 +503,7 @@ Labyrinthe::Labyrinthe (char* filename)
 	//_npicts = 2;
 	//_picts = affiche;
 	// la deuxi�me � une texture diff�rente.
-	char	tmp [128];
+	//char	tmp [128];
 	/*
 	sprintf (tmp, "%s/%s", texture_dir, "voiture.jpg");
 	_picts [1]._ntex = wall_texture (tmp);
