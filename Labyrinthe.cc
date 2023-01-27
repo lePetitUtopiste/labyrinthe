@@ -346,6 +346,12 @@ Labyrinthe::Labyrinthe (char* filename)
 			}
 		}
 		//mise a jour des data pour
+
+		//les marques au sol
+		for (int cpt = 0; cpt < _nmarks; cpt++)
+		{
+			_data[_marks[cpt]._x][_marks[cpt]._y] = 2;
+		}
 		//les murs:
 		for (int cpt = 0; cpt < _nwall; cpt++)
 		{
