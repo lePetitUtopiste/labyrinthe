@@ -293,8 +293,8 @@ void Gardien::update()
     // cout<<"------------------------------------------------------------------------"
     //     <<endl;
 
-    bool coll = !move(-sin(_angle_rad)*_speed,cos(_angle_rad)*_speed);
-    //bool coll = true;
+    //bool coll = !move(-sin(_angle_rad)*_speed,cos(_angle_rad)*_speed);
+    bool coll = true;
     bool vu_debug = false;
     if(dist.norm() < FOV && check_collision(_l,x,y,p_x/Environnement::scale
                                                   ,p_y/Environnement::scale))
@@ -303,7 +303,7 @@ void Gardien::update()
         _angle_cible = dist.angle();
         if(!tire)
         {
-            //fire(0);
+            fire(0);
         }
     }
 

@@ -145,7 +145,7 @@ void scan_laby (Labyrinthe* l,ifstream& file, map<char,int> table_texture)
 			{
 				default:
 				//TODO verifier que les lettres ne soit pas comptées 2 fois (vertical + horizontal)
-					if(isalpha(line[(*iter).y]))
+					if(isalpha(line[(*iter).y]) && line[(*iter).y] != "G" && line[(*iter).y] != "C" && line[(*iter).y] != "X")
 					{
 						(l->_npicts)++;
 						picts.push_back({x,y1,x+1,y1,table_texture[line[(*iter).y]]});
