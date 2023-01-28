@@ -32,7 +32,7 @@ Environnement* Environnement::init (char* filename)
 
 /**
  * @brief va chercher les fichiers nécessaires pour les textures
- * 
+ *
  * @param l le labyrinthe
  * @param file le fichier utilisé pour charger le labyrinthe
  * @warning va arrêter la lecture aau premier '+' rencontré dans
@@ -71,7 +71,7 @@ void scan_test(Labyrinthe* l, ifstream& file, map<char,int>& table_texture)
 				cout<<"result"<<table_texture[nom]<<endl;
 			}
 			//on reinitialise le tout
-			nom = '\n'; 
+			nom = '\n';
 			//cible.clear();
 			cible.assign(l->texture_dir);
 			cible.push_back('\\');
@@ -110,7 +110,7 @@ void scan_laby (Labyrinthe* l,ifstream& file, map<char,int> table_texture)
 	vector<Mover*> Guards;
 	Guards.push_back(new Chasseur(l));//création du chasseur
 	l->_nguards = 1;
-	
+
 
 	string line; //la ligne du fichier
 
@@ -124,7 +124,7 @@ void scan_laby (Labyrinthe* l,ifstream& file, map<char,int> table_texture)
 	{
 		picts_vu.clear();
 		cout<<"lecture ligne "<<x<<endl<<line<<endl;
-		
+
 		bool mur_en_cours = false;
 		Coord debut = {0,0};
 		//recherche de mur verticaux
@@ -168,7 +168,7 @@ void scan_laby (Labyrinthe* l,ifstream& file, map<char,int> table_texture)
 			}
 		}
 		//analyse de la ligne en cours
-		
+
 		for(int i = 0; i < line.size(); i++)
 		{
 			char c = line[i];
@@ -241,9 +241,9 @@ void scan_laby (Labyrinthe* l,ifstream& file, map<char,int> table_texture)
 							(l->_npicts)++;
 							picts.push_back({x,i,x,i+1,table_texture[c]});
 						}
-						
+
 					}
-				break;	
+				break;
 			}
 		}
 		//cout<<"fin analyse ligne"<<endl;
@@ -255,7 +255,7 @@ void scan_laby (Labyrinthe* l,ifstream& file, map<char,int> table_texture)
 	//on affiche la liste des murs créers
 	for (int i = 0; i < l->_nwall; i++)
 	{
-		/*necessaire car le système de coordonnée 
+		/*necessaire car le système de coordonnée
 		utilisé dans le fichier est l'inverse de celui du prog*/
 		int tmp = walls.at(i)._x1;
 		walls.at(i)._x1 = walls.at(i)._y1;
@@ -266,14 +266,14 @@ void scan_laby (Labyrinthe* l,ifstream& file, map<char,int> table_texture)
 		// On copie maintenant le mur corrigé dans l'objet labyrinthe
 		(l->_walls)[i] = walls.at(i);
 		//cout<<"Wall n°"<<i<<": "<<(l->_walls)[i]._x1<<","<<(l->_walls)[i]._y1<<" : "<<(l->_walls)[i]._x2<<","<<(l->_walls)[i]._y2<<":"<<(l->_walls)[i]._ntex<<endl;
-		
+
 	}
 
 	l->_picts = new Wall[l->_npicts];
 	//on affiche la liste des murs créers
 	for (int i = 0; i < l->_npicts; i++)
 	{
-		/*necessaire car le système de coordonnée 
+		/*necessaire car le système de coordonnée
 		utilisé dans le fichier est l'inverse de celui du prog*/
 		int tmp = picts.at(i)._x1;
 		picts.at(i)._x1 = picts.at(i)._y1;
@@ -284,7 +284,7 @@ void scan_laby (Labyrinthe* l,ifstream& file, map<char,int> table_texture)
 		// On copie maintenant le mur corrigé dans l'objet labyrinthe
 		(l->_picts)[i] = picts.at(i);
 		//cout<<"Wall n°"<<i<<": "<<(l->_walls)[i]._x1<<","<<(l->_walls)[i]._y1<<" : "<<(l->_walls)[i]._x2<<","<<(l->_walls)[i]._y2<<":"<<(l->_walls)[i]._ntex<<endl;
-		
+
 	}
 
 	//cout<<"caisses trouvees: "<<l->_nboxes<<endl;
@@ -401,12 +401,14 @@ Labyrinthe::Labyrinthe (char* filename)
 		//le trésor
 		//_data[_treasor._x][_treasor._y] = '1';
 		//guardes
+		/*
 		for(int i = 0; i < _nguards ; i++)
 		{
 			Mover* m = _guards[i];
 			_data[(int)(m->_x/scale)][(int)(m->_y/scale)] = '1';
 
 		}
+		*/
 		//cout<<"fin du test"<<endl;
 		file.close();
 		cout<<endl<<endl<<"============================================================================================"<<endl;

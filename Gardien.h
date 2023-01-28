@@ -15,11 +15,15 @@ public:
 	static Sound*	_Guard_fire;	// bruit de l'arme du chasseur.
 	static Sound* _Guard_death;
 
-	const int FOV = 100;
+	const int FOV = 300; //le champ de vision du gardien (représenté par un cercle autour de ce dernier)
 	int _angle_cible;
-	const float _speed = 0.5;
+	const float _speed = 1; // la vitesse de déplacement du gardien (pour l'instant inutilisé)
+
 	//pourcentage de l'écart actuel a parcourir à chaque update
 	const float _vitesse_rotation = 0.15;
+
+	//l'imprécision maximale du gardien (l'imprécision effective est calculé par rapport au nombre de point de vie restant)
+	const int decalage_tir_max = 10;
 
 	Gardien (Labyrinthe* l, const char* modele) : Entity(120, 80, l, modele,10),tire(false),_angle_cible(0)
 	{}

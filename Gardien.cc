@@ -182,14 +182,17 @@ bool check_collision(Environnement* l, int x1, int y1, int x2, int y2)
  * @param dy la composante y du vecteur du mouvement
  * @return true si le point d'arriver contient un obstacle
  * @return false sinon
- * @warning ne verifie pas encore si il y a un mur entre le point de départ et le point d'arriver
+ * @warning ne verifie pas encore si il y a un mur entre le point de départ et
+  le point d'arrivé
  */
 bool Gardien::move(double dx, double dy)
 {
-    int x = (_x+dx)/Environnement::scale;
-    int y = (_y+dy)/Environnement::scale;
+    int x = (_x)/Environnement::scale;
+    int y = (_y)/Environnement::scale;
+    int dest_x = (_x+dx)/Environnement::scale;
+    int dest_y = (_y+dy)/Environnement::scale;
     //cout<<x<<";"<<y<<"|"<<_l->data(x,y)<<endl;
-    if(((Labyrinthe*)_l)->data(x,y) > EMPTY)
+    if(!check_collision(_l,x,y,dest_x,dest_y))
     {
         return false;
 
@@ -290,10 +293,11 @@ void Gardien::update()
     // cout<<"------------------------------------------------------------------------"
     //     <<endl;
 
-    //bool coll = !move(-sin(_angle_rad),cos(_angle_rad));
-    bool coll = true;
+    bool coll = !move(-sin(_angle_rad)*_speed,cos(_angle_rad)*_speed);
+    //bool coll = true;
     bool vu_debug = false;
-    if(dist.norm() < FOV && check_collision(_l,x,y,p_x/Environnement::scale,p_y/Environnement::scale))
+    if(dist.norm() < FOV && check_collision(_l,x,y,p_x/Environnement::scale
+                                                  ,p_y/Environnement::scale))
     {
         vu_debug = true;
         _angle_cible = dist.angle();
@@ -303,19 +307,21 @@ void Gardien::update()
         }
     }
 
-    if(coll)
+    if(!coll)
     {
-        //int offset = rand()%45;
+        int offset = rand()%45;
         //cout<<offset<<endl;
-        //_angle_cible = (_angle_cible+(offset)+90)%360;
+        //_angle = (_angle+(offset))%360;
+        //_angle_cible = _angle;
     }
 
     if(_angle_cible != _angle)
-        _angle =  (1-_vitesse_rotation) * _angle + _vitesse_rotation * _angle_cible;
+        _angle =  (1-_vitesse_rotation) * _angle + _vitesse_rotation * _angle_cible; //interpolation linéaire
 
 
      char test[100];
-     sprintf(test,"Guard: angle:%d|cible:%d\nDist: %f angle:%d| %d",_angle,_angle_cible,dist.norm(),dist.angle(),vu_debug);
+     sprintf(test,"Guard: angle:%d|cible:%d\nDist: %f angle:%d| %d",_angle,
+             _angle_cible,dist.norm(),dist.angle(),vu_debug);
      message(test);
 
 }

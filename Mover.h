@@ -54,6 +54,7 @@ class Entity : public Mover
 
 	static Sound* _hunter_fire;	// bruit de l'arme du chasseur.
 	static Sound* _hunter_hit; // cri du chasseur touch�.
+	const int vie_max;
 	int vie;
 
 	void degat(int deg){
@@ -68,14 +69,14 @@ class Entity : public Mover
 		}
 	}
 
-	Entity(int x, int y, Labyrinthe* l, 
+	Entity(int x, int y, Labyrinthe* l,
 			const char* modele,int v)
-	:Mover(x,y,l,modele),mort(false),vie(v)
+	:Mover(x,y,l,modele),mort(false),vie_max(v),vie(v)
 	{}
 
 	/**
 	 * @brief intique si l'entité est morte (etat 1 ou 2)
-	 * 
+	 *
 	 * @return * bool la valeur de la variable mort
 	 */
 	bool est_mort()
@@ -85,7 +86,7 @@ class Entity : public Mover
 
 	/**
 	 * @brief indique si la mort de l'entité a été traité
-	 * 
+	 *
 	 * @return bool si l'entité a été despawn()
 	 */
 	bool est_traite()
