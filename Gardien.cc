@@ -63,11 +63,12 @@ void affiche_data(char tab[LAB_WIDTH][LAB_HEIGHT])
 {
     for(int i = 0; i< LAB_HEIGHT; i++)
     {
+        cout<<"|";
         for(int j = 0; j < LAB_WIDTH; j++)
         {
             cout<<tab[j][i];
         }
-        cout<<endl;
+        cout<<"|"<<endl;
     }
 }
 
@@ -94,104 +95,83 @@ bool check_collision(Environnement* l, int x1, int y1, int x2, int y2)
     {
         for(int x = 0; x < LAB_WIDTH; x++)
         {
-            debug[x][y] = ' ';
+            debug[x][y] = '-';
         }
+
     }
 
-    debug[(int)x1][(int)y1] = 'X';
-    debug[(int)x2][(int)x2] = 'X';
+    // debug[(int)x1][(int)y1] = 'X';
+    // debug[(int)x2][(int)y2] = 'X';
 
-    int dx = x2 - x1;
-    int dy = y2 - y1;
-    int D = 2*dy - dx;
-    int y = y1;
+    //initialisation de l'algo de bresenham
+    int dx , dy;
+    int sx, sy;
+    int err,e2;
 
-    cout<<"calcul ligne [ ("<<x1<<","<<y1<<") ; ("<<x2<<","<<y2<<")]"<<endl;
-    for (int x = x1 ; x <= x2; x++)
+    if (x2 >= x1 )
     {
-        cout<<x<<","<<y<<endl;
-        //plot(x, y)
-        if (D > 0)
-        {
-            y = y + 1;
-            D = D - 2*dx;
-        }
-        D = D + 2*dy;
-
-        debug[(int)x1][(int)y1] = 'O';
-
-        if(l->data(x,y) > EMPTY)
-        {
-            cout<<"fin recherche collision"<<endl;
-            //affiche_data(debug);
-            cout<<"fin debug"<<endl;
-            return false;
-        }
+        dx = x2 - x1;
+    }else{
+      dx = x1 - x2;
     }
-    return true;
-    //////////////////////////////////
 
-    /*
-    float dx = abs(x2 - x1);
-    float sx;
+    if(y2 >= y1)
+    {
+      dy = y1 - y2;
+    }else{
+      dy = y2 - y1;
+    }
+
     if(x1 < x2)
     {
-        sx = 1;
+      sx = 1;
     }else{
-        sx = -1;
+      sx = -1;
     }
-
-    float dy = -abs(y2 - y1);
-    float sy;
-
-    float error = dx + dy;
 
     if(y1 < y2)
     {
-        sy = -1;
+      sy = 1;
     }else{
-        sy = 1;
+      sy = -1;
     }
+
+    err = dx + dy;
+    int x = x1;
+    int y = y1;
 
     while(true)
     {
-        if(x1 == x2 && y1 == y2)
-        {
-            affiche_data(debug);
-            return true;
-        }
-        float e2 = 2*error;
+
+        if (x == x2 && y == y2)
+          break;
+
+        e2 = 2*err;
         if(e2 >= dy)
         {
-            if(x1 == x2)
-            {
-                affiche_data(debug);
-                return true;
-            }
-            error = error + dy;
-            x1 = x1 + sx;
-        }
-        if (e2 <= dx)
-        {
-            if (y1 == y2)
-            {
-                affiche_data(debug);
-                return true;
-            }
-            error = error + dx;
-            y1 = y1 + sy;
+          err += dy;
+          x += sx;
         }
 
-        debug[(int)x1][(int)y1] = 'O';
-        //si on tombe sur une case occupée
-        // on arrête la recherche et on renvoie faux
-        if(l->data((int)x1,(int)y1) > EMPTY)
+        if (e2 <= dx)
         {
-            affiche_data(debug);
+          err += dx;
+          y += sy;
+        }
+
+        // if(x != x2 || y != y2)
+        //   debug[(int)x][(int)y] = 'O';
+
+        if(l->data(x,y) > EMPTY)
+        {
+            // cout<<"fin recherche collision"<<endl;
+            // affiche_data(debug);
+            // cout<<"fin debug"<<endl;
             return false;
         }
+
     }
-    */
+    return true;
 }
 
 
@@ -208,7 +188,7 @@ bool Gardien::move(double dx, double dy)
 {
     int x = (_x+dx)/Environnement::scale;
     int y = (_y+dy)/Environnement::scale;
-    cout<<x<<";"<<y<<"|"<<_l->data(x,y)<<endl;
+    //cout<<x<<";"<<y<<"|"<<_l->data(x,y)<<endl;
     if(((Labyrinthe*)_l)->data(x,y) > EMPTY)
     {
         return false;
@@ -310,11 +290,12 @@ void Gardien::update()
     // cout<<"------------------------------------------------------------------------"
     //     <<endl;
 
-    bool coll = !move(-sin(_angle_rad),cos(_angle_rad));
-    //bool coll = true;
-    //bool test = check_collision(_l,x,y,p_x,p_y);
-    if(dist.norm() < FOV)
+    //bool coll = !move(-sin(_angle_rad),cos(_angle_rad));
+    bool coll = true;
+    bool vu_debug = false;
+    if(dist.norm() < FOV && check_collision(_l,x,y,p_x/Environnement::scale,p_y/Environnement::scale))
     {
+        vu_debug = true;
         _angle_cible = dist.angle();
         if(!tire)
         {
@@ -324,16 +305,17 @@ void Gardien::update()
 
     if(coll)
     {
-        int offset = rand()%45;
+        //int offset = rand()%45;
         //cout<<offset<<endl;
-        _angle_cible = (_angle_cible+(offset)+90)%360;
+        //_angle_cible = (_angle_cible+(offset)+90)%360;
     }
 
     if(_angle_cible != _angle)
         _angle =  (1-_vitesse_rotation) * _angle + _vitesse_rotation * _angle_cible;
 
-    char test[100];
-    sprintf(test,"Guard: angle:%d|cible:%d\nDist: %f angle:%d| %d",_angle,_angle_cible,dist.norm(),dist.angle(),coll);
-    message(test);
+
+     char test[100];
+     sprintf(test,"Guard: angle:%d|cible:%d\nDist: %f angle:%d| %d",_angle,_angle_cible,dist.norm(),dist.angle(),vu_debug);
+     message(test);
 
 }
