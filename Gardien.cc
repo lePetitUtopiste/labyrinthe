@@ -7,6 +7,10 @@
 #include <list>
 using namespace std;
 
+/**
+ * @brief structure de vecteur basique utilise pour les calculs d'angles 
+ * 
+ */
 struct vector
 {
     float x,y;
@@ -17,16 +21,32 @@ struct vector
         y = y2 - y1;
     }
 
+    /**
+     * @brief calcul la norme du vecteur
+     * 
+     * @return float 
+     */
     float norm()
     {
         return sqrt(x*x + y*y);
     }
 
+    /**
+     * @brief mesure l'angle orienté entre le vecteur actuel et le vecteur fourni
+     * 
+     * @param v le vecteur par rapport auquel on veut calculer l'angle
+     * @return int un angle en degré
+     */
     int angle_to(vector v)
     {
         return 180*(atan2(v.y,v.x) - atan2(y,x))/M_PI;
     }
 
+    /**
+     * @brief renvoie l'angle entre l'axe X et le vecteur
+     * 
+     * @return int un angle en degré
+     */
     int angle()
     {
         return 180*(atan2(y,x))/M_PI;
@@ -51,9 +71,25 @@ void affiche_data(char tab[LAB_WIDTH][LAB_HEIGHT])
     }
 }
 
+/**
+ * @brief verifie si il y a des obstacles entre le joueur et le gardien
+ * via l'algorithme de bresenham
+ * 
+ * @param l l'environnemeent
+ * @param x1 la position x du gardien
+ * @param y1 la position y du gardien
+ * @param x2 la position x du joueur
+ * @param y2 la position y du joueur
+ * @return true si aucun mur n'intersecte la ligne entre le joueur et le gardien
+ * @return false sinon
+ */
 bool check_collision(Environnement* l, int x1, int y1, int x2, int y2)
 {
+
+    // Mise en place d'outil de debug
+
     char debug[LAB_WIDTH][LAB_HEIGHT];
+    
     for (int y = 0; y < LAB_HEIGHT; y++)
     {
         for(int x = 0; x < LAB_WIDTH; x++)
@@ -61,10 +97,41 @@ bool check_collision(Environnement* l, int x1, int y1, int x2, int y2)
             debug[x][y] = ' ';
         }
     }
-
+    
     debug[(int)x1][(int)y1] = 'X';
     debug[(int)x2][(int)x2] = 'X';
-    
+
+    int dx = x2 - x1;
+    int dy = y2 - y1;
+    int D = 2*dy - dx;
+    int y = y1;
+
+    cout<<"calcul ligne [ ("<<x1<<","<<y1<<") ; ("<<x2<<","<<y2<<")]"<<endl;
+    for (int x = x1 ; x <= x2; x++)
+    {
+        cout<<x<<","<<y<<endl;
+        //plot(x, y)
+        if (D > 0)
+        {
+            y = y + 1;
+            D = D - 2*dx;
+        }
+        D = D + 2*dy;
+        
+        debug[(int)x1][(int)y1] = 'O';
+
+        if(l->data(x,y) > EMPTY)
+        {
+            cout<<"fin recherche collision"<<endl;
+            affiche_data(debug);
+            cout<<"fin debug"<<endl;
+            return false;
+        }
+    }
+    return true;
+    //////////////////////////////////
+
+    /*
     float dx = abs(x2 - x1);
     float sx;
     if(x1 < x2)
@@ -124,13 +191,22 @@ bool check_collision(Environnement* l, int x1, int y1, int x2, int y2)
             return false;
         }
     }
+    */
 }
 
 
-
+/**
+ * @brief verifie si il n'y a pas d'obstacles au point d'arrivé du gardien
+ * 
+ * @param dx la composante x du vecteur de mouvmement
+ * @param dy la composante y du vecteur du mouvement
+ * @return true si le point d'arriver contient un obstacle
+ * @return false sinon
+ * @warning ne verifie pas encore si il y a un mur entre le point de départ et le point d'arriver
+ */
 bool Gardien::move(double dx, double dy)
 {
-    if(((Labyrinthe*)_l)->data((_x+dx)/Environnement::scale,(_y+dy)/Environnement::scale) != EMPTY)
+    if(((Labyrinthe*)_l)->data((_x+dx)/Environnement::scale,(_y+dy)/Environnement::scale) >= EMPTY)
     {
         return false;
 
@@ -165,7 +241,7 @@ bool Gardien::process_fireball(float dx, float dy)
 	}
 	// collision...
 	// calculer la distance maximum en ligne droite.
-	float	dmax2 = (_l -> width ())*(_l -> width ()) + (_l -> height ())*(_l -> height ());
+	//float	dmax2 = (_l -> width ())*(_l -> width ()) + (_l -> height ())*(_l -> height ());
 	// faire exploser la boule de feu avec un bruit fonction de la distance.
 	//_wall_hit -> play (1. - dist2/dmax2);
 	//on verifie si la boule a touché le joueur
@@ -205,8 +281,8 @@ void Gardien::update()
         return;
     }
 
-    float p_x = (_l->_guards[0])->_x;///Environnement::scale;
-    float p_y = (_l->_guards[0])->_y;///Environnement::scale;
+    float p_x = (_l->_guards[0])->_x/Environnement::scale;
+    float p_y = (_l->_guards[0])->_y/Environnement::scale;
 
     float x = _x/Environnement::scale;
     float y = _y/Environnement::scale;
@@ -233,7 +309,9 @@ void Gardien::update()
 
     bool coll = !move(cos(_angle_rad),sin(_angle_rad));
     //bool coll = true;
-    if(dist.norm() < FOV )//&& check_collision(_l,x,y,p_x,p_y))
+    cout<<"test collision"<<endl;
+    bool test = check_collision(_l,x,y,p_x,p_y); 
+    if(dist.norm() < FOV)
     {
         _angle_cible = dist.angle() - 90; 
         if(!tire)
