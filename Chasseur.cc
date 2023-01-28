@@ -12,9 +12,9 @@ using namespace std;
 bool Chasseur::move_aux (double dx, double dy)
 {
 	//Debug coord
-	char test[100];
-	sprintf(test,"coord: %f,%f | coord2: %d,%d",_x,_y,(int)_x/Environnement::scale,(int)_y/Environnement::scale);
-	message(test);
+	//char test[100];
+	//sprintf(test,"coord: %f,%f | coord2: %d,%d",_x,_y,(int)_x/Environnement::scale,(int)_y/Environnement::scale);
+	//message(test);
 	if ((int)_x/Environnement::scale == _l->_treasor._x && (int) _y/Environnement::scale == _l->_treasor._y)
 		partie_terminee(true);
 	else if (!collision || EMPTY >= _l -> data ((int)((_x + dx) / Environnement::scale),
@@ -56,11 +56,11 @@ bool Chasseur::process_fireball (float dx, float dy)
 	float	x = (_fb -> get_x ()) / Environnement::scale;
 	float	y = (_fb -> get_y ()) / Environnement::scale;
 	float	dist2 = x*x + y*y;
-	
+
 	//pour chaque garde
 	for(int i = 1; i < _l->_nguards; i++)
 	{
-		Gardien* g = (Gardien*)_l->_guards[i]; 
+		Gardien* g = (Gardien*)_l->_guards[i];
 		int g_x = ( g->_x) / Environnement::scale;
 		int g_y = ( g->_y) / Environnement::scale;
 
