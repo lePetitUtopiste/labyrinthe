@@ -104,7 +104,24 @@ class Entity : public Mover
 		mort = 2;
 		return;
 	}
+};
 
+class DummyGuard : public Mover
+{
+
+	
+	void update()
+	{
+
+		_l->_guards[0]->update();
+	}	// fait 'penser' le personnage (gardien).
+	// fait bouger la boule de feu du personnage.
+	bool process_fireball (float dx, float dy)
+	{}
+	// tente de d�placer le personnage de <dx,dy>.
+	bool move (double dx, double dy){}
+	// fait tirer le personnage sur un ennemi (vous pouvez ignorer l'angle vertical).
+	void fire (int angle_vertical){}
 };
 
 #endif

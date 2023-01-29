@@ -2,6 +2,7 @@
 #define LABYRINTHE_H
 
 #include "Environnement.h"
+#include "Mover.h"
 
 #define	LAB_WIDTH	94
 #define	LAB_HEIGHT	61
@@ -22,6 +23,7 @@ struct Coord
 class Labyrinthe : public Environnement {
 private:
 	char	_data [LAB_WIDTH][LAB_HEIGHT];
+	DummyGuard update_player;
 
 public:
 	Labyrinthe (char*);

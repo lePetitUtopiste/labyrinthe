@@ -1,6 +1,5 @@
 #include "Chasseur.h"
 #include "Gardien.h"
-#include "labyrinthe.h"
 #include <math.h>
 #include <sstream>
 #include <iostream>

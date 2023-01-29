@@ -332,6 +332,9 @@ void scan_laby (Labyrinthe* l,ifstream& file, map<char,int> table_texture)
 
 Labyrinthe::Labyrinthe (char* filename)
 {
+
+	//update_player = new DummyGuard(Mover( -2*Environnement::scale, -2*Environnement::scale,
+	//																this,"lezard"));
 	//test de la fonction de scan
 		ifstream file;
 		file.open(filename);
