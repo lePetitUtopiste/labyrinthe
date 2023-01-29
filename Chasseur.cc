@@ -1,10 +1,12 @@
 #include "Chasseur.h"
 #include "Gardien.h"
+#include "labyrinthe.h"
 #include <math.h>
 #include <sstream>
 #include <iostream>
 
 using namespace std;
+
 
 /*
  *	Tente un deplacement.
@@ -15,18 +17,30 @@ bool Chasseur::move_aux (double dx, double dy)
 	//char test[100];
 	//sprintf(test,"coord: %f,%f | coord2: %d,%d",_x,_y,(int)_x/Environnement::scale,(int)_y/Environnement::scale);
 	//message(test);
+	static auto derniere_teleportation = chrono::high_resolution_clock::now();
+
+	//on verifie que le joueur ne marche pas sur le trésor
 	if ((int)_x/Environnement::scale == _l->_treasor._x && (int) _y/Environnement::scale == _l->_treasor._y)
 		partie_terminee(true);
 	else if (!collision || EMPTY >= _l -> data ((int)((_x + dx) / Environnement::scale),
 							 (int)((_y + dy) / Environnement::scale)))
 	{
+		//si l'emplacement du joueur est une marque au sol (représenté par un -1 dans
+		//	data)
+
+		//on verifie que le temps écoulé depuis la dernière téléportation est supérieur au cooldown
+		chrono::duration<double> temps_derniere_teleport = chrono::high_resolution_clock::now() - derniere_teleportation;
 		if (_l -> data ((int)((_x + dx) / Environnement::scale),
-							 (int)((_y + dy) / Environnement::scale)) == -1)
+							 (int)((_y + dy) / Environnement::scale)) == -1
+				&& temps_derniere_teleport.count() >= cooldown_telep) //on verifie que le joueur ne vient pas juste de se téléporter
 		{
 			int cpt = rand()%(_l-> _nmarks);
+
 			cout<<cpt<<endl;
-			_x = _l->_marks[cpt]._x * Environnement::scale;
-			_y = _l->_marks[cpt]._y * Environnement::scale;
+			_x = (_l->_marks[cpt]._x + 0.5) * Environnement::scale;
+			_y = (_l->_marks[cpt]._y + 0.5) * Environnement::scale;
+
+			derniere_teleportation = chrono::high_resolution_clock::now();
 		}
 		_x += dx;
 		_y += dy;

@@ -91,14 +91,6 @@ void scan_test(Labyrinthe* l, ifstream& file, map<char,int>& table_texture)
 }
 void scan_laby (Labyrinthe* l,ifstream& file, map<char,int> table_texture)
 {
-	struct Coord
-	{
-		int x,y;
-		bool operator==(Coord c)
-		{
-			return (c.x == x) && (c.y == y);
-		}
-	};
 
 	vector<Wall> picts;
 	l->_npicts = 0;
@@ -181,7 +173,7 @@ void scan_laby (Labyrinthe* l,ifstream& file, map<char,int> table_texture)
 					l->_nguards++;
 				break;
 
-				case 'X': //les caisses
+				case 'X': case 'x': //les caisses
 					l->_nboxes++;
 					caisses.push_back({i,x,0});
 				break;

@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include "Mover.h"
 #include "Sound.h"
+#include <chrono>
 
 class Labyrinthe;
 
@@ -18,6 +19,7 @@ public:
 	static Sound*	_wall_hit;	// on a tap� un mur.
 	static Sound*	_hunter_fire;	// bruit de l'arme du chasseur.
 
+	const int cooldown_telep = 5;
 	// constructeur.
 	Chasseur (Labyrinthe* l);
 	// ne bouger que dans une case vide (on 'glisse' le long des obstacles)

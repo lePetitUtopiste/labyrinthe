@@ -6,6 +6,19 @@
 #define	LAB_WIDTH	94
 #define	LAB_HEIGHT	61
 
+struct Coord
+{
+	int x,y;
+	bool operator==(Coord c)
+	{
+		return (c.x == x) && (c.y == y);
+	}
+	inline bool operator!= (Coord c)
+	{
+		return !(c == *this );
+	}
+};
+
 class Labyrinthe : public Environnement {
 private:
 	char	_data [LAB_WIDTH][LAB_HEIGHT];
