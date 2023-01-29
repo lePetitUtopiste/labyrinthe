@@ -2,3 +2,4 @@ Chasseur.o
 Gardien.o
 Labyrinthe.o
 *.exe
+.vscode/settings.json
