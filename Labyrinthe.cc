@@ -43,6 +43,7 @@ void scan_test(Labyrinthe* l, ifstream& file, map<char,int>& table_texture)
 
 	//string ligne;
 	string cible(l->texture_dir);
+	cible.push_back(SEPARATOR);
 	char input = file.get();
 	char nom = '\n';
 	//int cpt = 0;
@@ -51,7 +52,7 @@ void scan_test(Labyrinthe* l, ifstream& file, map<char,int>& table_texture)
 		if (isalpha(input) && nom == '\n') // la première lettre qu'on croise est le nom de l'affiche
 		{
 			nom = input; //on stocke le nom
-		}else if (input != ' ' && input != '	' && input != '#'){
+		}else if (input != '\n' && input != ' ' && input != '	' && input != '#'){
 			cible.push_back(input);
 		}
 
@@ -74,7 +75,7 @@ void scan_test(Labyrinthe* l, ifstream& file, map<char,int>& table_texture)
 			nom = '\n';
 			//cible.clear();
 			cible.assign(l->texture_dir);
-			cible.push_back('\\');
+			cible.push_back(SEPARATOR);
 			//si il s'agissait d'un # on avance le curseur jusqu'au début de la ligne suivante
 			if(input == '#')
 			{
@@ -144,8 +145,7 @@ void scan_laby (Labyrinthe* l,ifstream& file, map<char,int> table_texture)
 			switch(line[(*iter).y])
 			{
 				default:
-				//TODO verifier que les lettres ne soit pas comptées 2 fois (vertical + horizontal)
-					if(isalpha(line[(*iter).y]) && line[(*iter).y] != "G" && line[(*iter).y] != "C" && line[(*iter).y] != "X")
+					if(isalpha(line[(*iter).y]) && line[(*iter).y] != 'G' && line[(*iter).y] != 'C' && line[(*iter).y] != 'X')
 					{
 						(l->_npicts)++;
 						picts.push_back({x,y1,x+1,y1,table_texture[line[(*iter).y]]});
@@ -181,9 +181,13 @@ void scan_laby (Labyrinthe* l,ifstream& file, map<char,int> table_texture)
 					l->_nguards++;
 				break;
 
-				case 'x':// les marques
+				case 'X': //les caisses
+					l->_nboxes++;
+					caisses.push_back({i,x,0});
+				break;
+				case 'M':// les marques
 					l->_nmarks++;
-					marques.push_back({x,i,0});
+					marques.push_back({x,i,table_texture['M']});
 				break;
 
 				case 'T':
@@ -293,11 +297,11 @@ void scan_laby (Labyrinthe* l,ifstream& file, map<char,int> table_texture)
 	l->_boxes = new Box[l->_nboxes];
 	for (int i = 0; i < l->_nboxes; i++)
 	{
-		//inversion des coords
+		/*inversion des coords
 		int tmp = caisses[i]._x;
 		caisses[i]._x = caisses[i]._y;
 		caisses[i]._y = tmp;
-		//////////////////////
+		////////////////////*/
 		l->_boxes[i] = caisses[i];
 		//cout<<"{"<<(caisses)[i]._x<<","<<(caisses)[i]._y<<"}"<<endl;
 	}
