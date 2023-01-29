@@ -1,17 +1,17 @@
 # un commentaire commence par #
 
 a	affiche1.jpg	# texture de l'affiche 1
-b	affiche2.jpg	# texture de l'affiche 2
+b	p1.gif	# texture de l'affiche 2
+M   p2.jpg
 
-
-+-----------------------------------------------------------------+
++-----------a-----------------b-----------------------------------+
 |                                                                 |
 |                                                                 |
 |                                                                 |
 |                                         T                       |
 |                                                                 |
-|                                                                 |
-|                                                                 |
+|                       M                                         |
+|            X                                                    |
 |                                                                 |
 |                                                                 |
 |                                                                 |
