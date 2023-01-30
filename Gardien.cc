@@ -190,8 +190,6 @@ bool Gardien::move(double dx, double dy)
 
     int dest_x = (_x+dx)/Environnement::scale;
     int dest_y = (_y+dy)/Environnement::scale;
-
-    cout<<"angle"<<_angle<<": "<<dx<<" "<<dy<<"|"<<dest_x<<";"<<dest_y<<endl;
     //cout<<x<<";"<<y<<"|"<<_l->data(x,y)<<endl;
     if(!check_collision(_l,x,y,dest_x,dest_y))
     {
@@ -274,7 +272,7 @@ void Gardien::update()
     float x = _x;///Environnement::scale;
     float y = _y;///Environnement::scale;
 
-    float _angle_rad = (_angle)*M_PI/180;
+    float _angle_rad = (_angle_cible)*M_PI/180;
 
     vector dist{};
     dist.init_vector(_x,_y,p_x,p_y);
@@ -304,7 +302,6 @@ void Gardien::update()
     {
         vu_debug = true;
         _angle_cible = dist.angle();
-        _angle = dist.angle();
         if(!tire)
         {
         //    fire(0);
@@ -315,12 +312,12 @@ void Gardien::update()
     {
         int offset = 1;
         //cout<<offset<<endl;
-        _angle = (_angle + offset)%360;
-        //_angle_cible += offset;
+        //_angle = (_angle + offset)%360;
+        _angle_cible += offset;
     }
 
-    //if(_angle_cible != _angle)
-    //    _angle =  (1-_vitesse_rotation) * _angle + _vitesse_rotation * _angle_cible; //interpolation linéaire
+    if(_angle_cible != _angle)
+       _angle =  (1-_vitesse_rotation) * _angle + _vitesse_rotation * _angle_cible; //interpolation linéaire
 
 
      char test[100];
