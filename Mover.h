@@ -109,7 +109,10 @@ class Entity : public Mover
 class DummyGuard : public Mover
 {
 
-	
+public:
+	DummyGuard(Labyrinthe* l):Mover(-1,-1,l,"lezard")
+	{}
+
 	void update()
 	{
 

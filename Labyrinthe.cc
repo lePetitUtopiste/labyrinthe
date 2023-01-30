@@ -102,7 +102,8 @@ void scan_laby (Labyrinthe* l,ifstream& file, map<char,int> table_texture)
 	l->_nmarks = 0;
 	vector<Mover*> Guards;
 	Guards.push_back(new Chasseur(l));//création du chasseur
-	l->_nguards = 1;
+	Guards.push_back(new DummyGuard(l));
+	l->_nguards = 2;
 
 
 	string line; //la ligne du fichier
@@ -333,7 +334,6 @@ void scan_laby (Labyrinthe* l,ifstream& file, map<char,int> table_texture)
 Labyrinthe::Labyrinthe (char* filename)
 {
 
-	//update_player = new DummyGuard(Mover( -2*Environnement::scale, -2*Environnement::scale,
 	//																this,"lezard"));
 	//test de la fonction de scan
 		ifstream file;

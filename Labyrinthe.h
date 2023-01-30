@@ -21,9 +21,9 @@ struct Coord
 };
 
 class Labyrinthe : public Environnement {
+
 private:
 	char	_data [LAB_WIDTH][LAB_HEIGHT];
-	DummyGuard update_player;
 
 public:
 	Labyrinthe (char*);
