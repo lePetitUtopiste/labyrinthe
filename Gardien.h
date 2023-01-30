@@ -15,7 +15,7 @@ public:
 	static Sound*	_Guard_fire;	// bruit de l'arme du chasseur.
 	static Sound* _Guard_death;
 
-	const int FOV = 300; //le champ de vision du gardien (représenté par un cercle autour de ce dernier)
+	const int FOV = 3000; //le champ de vision du gardien (représenté par un cercle autour de ce dernier)
 	int _angle_cible;
 	const float _speed = 1; // la vitesse de déplacement du gardien (pour l'instant inutilisé)
 

@@ -182,15 +182,16 @@ bool check_collision(Environnement* l, int x1, int y1, int x2, int y2)
  * @param dy la composante y du vecteur du mouvement
  * @return true si le point d'arriver contient un obstacle
  * @return false sinon
- * @warning ne verifie pas encore si il y a un mur entre le point de départ et
-  le point d'arrivé
  */
 bool Gardien::move(double dx, double dy)
 {
     int x = (_x)/Environnement::scale;
     int y = (_y)/Environnement::scale;
+
     int dest_x = (_x+dx)/Environnement::scale;
     int dest_y = (_y+dy)/Environnement::scale;
+
+    cout<<"angle"<<_angle<<": "<<dx<<" "<<dy<<"|"<<dest_x<<";"<<dest_y<<endl;
     //cout<<x<<";"<<y<<"|"<<_l->data(x,y)<<endl;
     if(!check_collision(_l,x,y,dest_x,dest_y))
     {
@@ -270,10 +271,10 @@ void Gardien::update()
     float p_x = (_l->_guards[0])->_x;///Environnement::scale;
     float p_y = (_l->_guards[0])->_y;///Environnement::scale;
 
-    float x = _x/Environnement::scale;
-    float y = _y/Environnement::scale;
+    float x = _x;///Environnement::scale;
+    float y = _y;///Environnement::scale;
 
-    float _angle_rad = 180*(_angle_cible)/M_PI;
+    float _angle_rad = (_angle)*M_PI/180;
 
     vector dist{};
     dist.init_vector(_x,_y,p_x,p_y);
@@ -293,30 +294,33 @@ void Gardien::update()
     // cout<<"------------------------------------------------------------------------"
     //     <<endl;
 
-    //bool coll = !move(-sin(_angle_rad)*_speed,cos(_angle_rad)*_speed);
-    bool coll = true;
+    bool coll = move(-sin(_angle_rad)*_speed,cos(_angle_rad)*_speed);
+    //bool coll = true;
     bool vu_debug = false;
-    if(dist.norm() < FOV && check_collision(_l,x,y,p_x/Environnement::scale
-                                                  ,p_y/Environnement::scale))
+    if(dist.norm() < FOV && check_collision(_l,x/Environnement::scale
+                                              ,y/Environnement::scale
+                                              ,p_x/Environnement::scale
+                                              ,p_y/Environnement::scale))
     {
         vu_debug = true;
         _angle_cible = dist.angle();
+        _angle = dist.angle();
         if(!tire)
         {
-            fire(0);
+        //    fire(0);
         }
     }
 
     if(!coll)
     {
-        int offset = rand()%45;
+        int offset = 1;
         //cout<<offset<<endl;
-        //_angle = (_angle+(offset))%360;
-        //_angle_cible = _angle;
+        _angle = (_angle + offset)%360;
+        //_angle_cible += offset;
     }
 
-    if(_angle_cible != _angle)
-        _angle =  (1-_vitesse_rotation) * _angle + _vitesse_rotation * _angle_cible; //interpolation linéaire
+    //if(_angle_cible != _angle)
+    //    _angle =  (1-_vitesse_rotation) * _angle + _vitesse_rotation * _angle_cible; //interpolation linéaire
 
 
      char test[100];

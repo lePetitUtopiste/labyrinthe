@@ -120,9 +120,9 @@ public:
 	}	// fait 'penser' le personnage (gardien).
 	// fait bouger la boule de feu du personnage.
 	bool process_fireball (float dx, float dy)
-	{}
+	{return false;}
 	// tente de d�placer le personnage de <dx,dy>.
-	bool move (double dx, double dy){}
+	bool move (double dx, double dy){return false;}
 	// fait tirer le personnage sur un ennemi (vous pouvez ignorer l'angle vertical).
 	void fire (int angle_vertical){}
 };

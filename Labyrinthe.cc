@@ -168,7 +168,7 @@ void scan_laby (Labyrinthe* l,ifstream& file, map<char,int> table_texture)
 			switch (c)
 			{
 				case 'G': //si on tombe sur un G on rajoute le chasseur
-					Guards.push_back(new Gardien(l,"Lezard"));
+					Guards.push_back(new Gardien(l,"Marvin"));
 					Guards.back()->_x = ((float) x)*((float) l->scale);
 					Guards.back()->_y = ((float)i) * ((float) l->scale);
 					l->_nguards++;
