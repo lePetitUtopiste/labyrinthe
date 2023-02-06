@@ -95,9 +95,7 @@ class Entity : public Mover
 	}
 
 	/**
-	 * @brief va indiquer à la classe que
-	 * l'entité ne doit plus être update et
-	 * qu'elle est dans l'état 2
+	 * @brief change l'état de l'entité à 2
 	 */
 	void despawn()
 	{
@@ -106,6 +104,10 @@ class Entity : public Mover
 	}
 };
 
+
+/**
+ * @brief classe utilisé pour appeller l'update du joueur. Aucune de ses fonction à part update ne sont fonctionnelles
+*/
 class DummyGuard : public Mover
 {
 

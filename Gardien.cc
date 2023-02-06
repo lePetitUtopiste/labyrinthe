@@ -8,7 +8,7 @@
 using namespace std;
 
 /**
- * @brief structure de vecteur basique utilise pour les calculs d'angles
+ * @brief structure de vecteur basique utilisée pour les calculs d'angles
  *
  */
 struct vector
@@ -143,8 +143,8 @@ bool check_collision(Environnement* l, int x1, int y1, int x2, int y2)
     while(true)
     {
 
-        if (x == x2 && y == y2)
-          break;
+        if (x == x2 && y == y2)//si on arrive à la case destination, on renvoie true
+          return true;
 
         e2 = 2*err;
         if(e2 >= dy)
@@ -161,7 +161,8 @@ bool check_collision(Environnement* l, int x1, int y1, int x2, int y2)
 
         // if(x != x2 || y != y2)
         //   debug[(int)x][(int)y] = 'O';
-
+        
+        //si la case est occupée, on s'arrête
         if(l->data(x,y) > EMPTY)
         {
             // cout<<"fin recherche collision"<<endl;
@@ -171,7 +172,6 @@ bool check_collision(Environnement* l, int x1, int y1, int x2, int y2)
         }
 
     }
-    return true;
 }
 
 
@@ -211,10 +211,11 @@ bool Gardien::process_fireball(float dx, float dy)
     int x = _fb->get_x()/Environnement::scale;
     int y = _fb->get_y()/Environnement::scale;
 
-    float dist = (vector{px - x, py - y}).norm();
+    float dist = (vector{px - x, py - y}).norm();//distance entre la boule de feu et le joueur
 
     //message("dist:%f",dist);
-
+    
+    // si la case d'arrivée et libre et que la boule de feu n'entre pas en collision avec le joueur
 	if (EMPTY == _l -> data ((int)((_fb -> get_x () + dx) / Environnement::scale),
 							 (int)((_fb -> get_y () + dy) / Environnement::scale))
                              && dist > 1)
@@ -224,24 +225,19 @@ bool Gardien::process_fireball(float dx, float dy)
 		// il y a la place.
 		return true;
 	}
-	// collision...
-	// calculer la distance maximum en ligne droite.
-	//float	dmax2 = (_l -> width ())*(_l -> width ()) + (_l -> height ())*(_l -> height ());
-	// faire exploser la boule de feu avec un bruit fonction de la distance.
-	//_wall_hit -> play (1. - dist2/dmax2);
-	//on verifie si la boule a touché le joueur
-    //cout<<"Verif: "<<x<<";"<<y<<endl;
+
+    //si la boule de feu est en collision avec le joueur..
     if( dist <= 1)
     {
-        cout<<"touché"<<endl;
-        Chasseur::_hunter_hit->play();
-        ((Entity*)(_l->_guards[0]))->degat(10);
+        Chasseur::_hunter_hit->play(); //joueur le son du joueur étant blessé
+        ((Entity*)(_l->_guards[0]))->degat(10);// retire les dégats
     }
     tire = false;
 	//message ("Booom...");
 	return false;
 
 }
+
 
 void Gardien::fire(int angle_vertical)
 {
@@ -266,11 +262,9 @@ void Gardien::update()
         return;
     }
 
-    float p_x = (_l->_guards[0])->_x;///Environnement::scale;
-    float p_y = (_l->_guards[0])->_y;///Environnement::scale;
+    float p_x = (_l->_guards[0])->_x;
+    float p_y = (_l->_guards[0])->_y;
 
-    float x = _x;///Environnement::scale;
-    float y = _y;///Environnement::scale;
 
     float _angle_rad = (_angle_cible)*M_PI/180;
 
@@ -292,37 +286,39 @@ void Gardien::update()
     // cout<<"------------------------------------------------------------------------"
     //     <<endl;
 
-    bool coll = move(-sin(_angle_rad)*_speed,cos(_angle_rad)*_speed);
-    //bool coll = true;
+    //On met -sin et cos car le regard de la texture et la variable angle on une différence de 90°
+    bool coll = move(-sin(_angle_rad)*_speed,cos(_angle_rad)*_speed); //on verifie si le gardien peut bouger
+
     bool vu_debug = false;
-    if(dist.norm() < FOV && check_collision(_l,x/Environnement::scale
-                                              ,y/Environnement::scale
+    if(dist.norm() < FOV && check_collision(_l,_x/Environnement::scale
+                                              ,_y/Environnement::scale
                                               ,p_x/Environnement::scale
-                                              ,p_y/Environnement::scale))
+                                              ,p_y/Environnement::scale)) //si le joueur est dans le champ de vision et que le gardien peut le voir
     {
         vu_debug = true;
-        _angle_cible = dist.angle();
+        _angle_cible = dist.angle(); //on change l'angle cible du gardien pour qu'il fasse façe au joueur
         if(!tire)
         {
-        //    fire(0);
+            fire(0);
         }
     }
 
-    if(!coll)
+    if(!coll) // si le gardien n'a pas pu bouger
     {
-        int offset = 1;
+        int offset = (rand()%180) - 90; //on ajoute un offset aléatoire 
         //cout<<offset<<endl;
         //_angle = (_angle + offset)%360;
         _angle_cible += offset;
     }
 
-    if(_angle_cible != _angle)
+    if(_angle_cible != _angle) //si l'ange réel n'est pas égale à l'angle cible on rajoute _vitesse_rotation % du chemin à l'angle réel (pour aducir le mouvmement)
        _angle =  (1-_vitesse_rotation) * _angle + _vitesse_rotation * _angle_cible; //interpolation linéaire
 
-
+    // DEBUG ////////////////////////////////////////////////////////////////
      char test[100];
      sprintf(test,"Guard: angle:%d|cible:%d\nDist: %f angle:%d| %d",_angle,
              _angle_cible,dist.norm(),dist.angle(),vu_debug);
      message(test);
+     ////////////////////////////////////////////////////////////////////////
 
 }

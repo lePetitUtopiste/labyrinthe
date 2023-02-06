@@ -63,13 +63,13 @@ void scan_test(Labyrinthe* l, ifstream& file, map<char,int>& table_texture)
 			if (nom != '\n')
 			{
 				cible.shrink_to_fit();
-				cout<<nom<<":"<<cible<<"|"<<endl;
+				//cout<<nom<<":"<<cible<<"|"<<endl;
 				char data[cible.size()];
 				strcpy(data,cible.c_str());
 				int ntex = l->wall_texture(data);
-				cout<<ntex<<endl;
+				//cout<<ntex<<endl;
 				table_texture[nom] = ntex;
-				cout<<"result"<<table_texture[nom]<<endl;
+				//cout<<"result"<<table_texture[nom]<<endl;
 			}
 			//on reinitialise le tout
 			nom = '\n';
@@ -89,6 +89,17 @@ void scan_test(Labyrinthe* l, ifstream& file, map<char,int>& table_texture)
 	file.unget();
 	return;
 }
+
+/**
+ * @brief parcours le labyrinthe dans le fichier transmis en paramètre et met à jour l'objet labyrinthe en fonction
+ * 
+ * @param l l'objet labyrinthe à initialiser
+ * @param file le stream du fichier à utiliser dont le curseur est placé au début du labyrinthe
+ * @param table_texture table de hachage contenant pour chaque indice de texture la texture chargée
+ * 
+ * @warning La lecture du fichier utilise le jeu de coordonnée (ligne colonne) et le jeu un repère mathématique classique.
+ * la fonction s'occupe d'inverser toutes les coordonnées à la fin de son execution
+*/
 void scan_laby (Labyrinthe* l,ifstream& file, map<char,int> table_texture)
 {
 
@@ -117,13 +128,13 @@ void scan_laby (Labyrinthe* l,ifstream& file, map<char,int> table_texture)
 	while(getline(file,line))
 	{
 		picts_vu.clear();
-		cout<<"lecture ligne "<<x<<endl<<line<<endl;
+		//cout<<"lecture ligne "<<x<<endl<<line<<endl;
 
 		bool mur_en_cours = false;
 		Coord debut = {0,0};
 		//recherche de mur verticaux
 		auto iter = murs_vert.begin();
-		cout<<"recherche des murs verticaux"<<endl;
+		//cout<<"recherche des murs verticaux"<<endl;
 		int cpt = 1;
 		int taille = murs_vert.size();
 		/*
@@ -131,25 +142,26 @@ void scan_laby (Labyrinthe* l,ifstream& file, map<char,int> table_texture)
 		*/
 		while(!murs_vert.empty() && iter != murs_vert.end())
 		{
-			cout<<cpt<<"/"<<taille<<endl;
+			//cout<<cpt<<"/"<<taille<<endl;
 			cpt++;
 			int x1 = (*iter).x;
 			int y1 = (*iter).y;
 			switch(line[(*iter).y])
 			{
 				default:
+					//si il s'agit d'une affich
 					if(isalpha(line[(*iter).y]) && line[(*iter).y] != 'G' && line[(*iter).y] != 'C' && line[(*iter).y] != 'X')
 					{
 						(l->_npicts)++;
-						picts.push_back({x,y1,x+1,y1,table_texture[line[(*iter).y]]});
-						picts_vu.push_back({x,y1});
+						picts.push_back({x,y1,x+1,y1,table_texture[line[(*iter).y]]}); //on l'ajoute en prenant la texture associée dans la table de texture
+						picts_vu.push_back({x,y1}); // on marque cette afffiche comme vu pour ne pas la recompter lors de la lecture de la ligne pour les murs horizontaux
 					}
 				case '|'://si il y a un | on ne fait rien
-					cout<<"mur potentiel en"<<x1<<","<<y1<<endl;
+					//cout<<"mur potentiel en"<<x1<<","<<y1<<endl;
 					iter ++;
 				break;
 				case '+': // Si on trouve un + en dessous d'un + déjà vu on crée le mur
-					cout<<"decouverte mur vertical en "<<x1<<","<<y1<<" ; "<<x<<","<<y1<<endl;
+					//cout<<"decouverte mur vertical en "<<x1<<","<<y1<<" ; "<<x<<","<<y1<<endl;
 					l->_nwall++;
 					walls.push_back({x1,y1,x,y1,0});
 					iter = murs_vert.erase(iter); //on retire le +
@@ -167,20 +179,20 @@ void scan_laby (Labyrinthe* l,ifstream& file, map<char,int> table_texture)
 			char c = line[i];
 			switch (c)
 			{
-				case 'G': //si on tombe sur un G on rajoute le chasseur
+				case 'G': //si on tombe sur un G on rajoute le chasseur en réalisant tout de suite l'inversion de coordonnées
 					Guards.push_back(new Gardien(l,"Marvin"));
-					Guards.back()->_x = ((float) x)*((float) l->scale);
-					Guards.back()->_y = ((float)i) * ((float) l->scale);
+					Guards.back()->_y = ((float) x)*((float) l->scale);
+					Guards.back()->_x = ((float)i) * ((float) l->scale);
 					l->_nguards++;
 				break;
 
-				case 'X': case 'x': //les caisses
+				case 'X': case 'x': //de même pour les caisses
 					l->_nboxes++;
-					caisses.push_back({i,x,0});
+					caisses.push_back({i,x,0}); //on réalise tout de suite l'inversion de coordonnées
 				break;
-				case 'M':// les marques
+				case 'M':// pour les marques
 					l->_nmarks++;
-					marques.push_back({x,i,table_texture['M']});
+					marques.push_back({i,x,table_texture['M']});
 				break;
 
 				case 'T':
@@ -189,15 +201,15 @@ void scan_laby (Labyrinthe* l,ifstream& file, map<char,int> table_texture)
 				break;
 
 				case 'C':// les caisses
-					Guards[0]->_x = ((float) x) * ((float) l->scale);
-					Guards[0]->_y = (float) (i) * ((float) l->scale);
+					Guards[0]->_y = ((float) x) * ((float) l->scale);
+					Guards[0]->_x = (float) (i) * ((float) l->scale);
 				break;
 				case '+':
 					murs_vert.push_back({x,i});//on ajoute ce plus dans la liste des potentiel murs verticaux
 
 					if(mur_en_cours)//si un mur est en cours de lecture sur cette ligne le mur est fini et on l'ajoute
 					{
-						cout<<"ajout du mur "<<debut.x<<","<<debut.y<<" ; "<<x<<","<<i<<endl;
+						//cout<<"ajout du mur "<<debut.x<<","<<debut.y<<" ; "<<x<<","<<i<<endl;
 						walls.push_back({debut.x,debut.y,x,i,0});//on copie dans le tableau);
 						l->_nwall ++;
 						if(i < line.size() - 1 && (line[i+1] == '-' || line[i+1] == '+'))//si un mur peut continuer après
@@ -212,7 +224,7 @@ void scan_laby (Labyrinthe* l,ifstream& file, map<char,int> table_texture)
 						//if(i < line.size() - 1)
 						{
 							//on initialise le début du mur
-							cout<<"début de mur trouvé en "<<x<<","<<i<<endl;
+							//cout<<"début de mur trouvé en "<<x<<","<<i<<endl;
 							debut.x = x;
 							debut.y = i;
 							mur_en_cours = true; //on inidique qu'on commence à lire un mur
@@ -221,11 +233,11 @@ void scan_laby (Labyrinthe* l,ifstream& file, map<char,int> table_texture)
 				break;
 
 				default:
-					if(isalpha(c))
+					if(isalpha(c)) //si il s'agit d'une lettre on ajoute alors l'affiche correspondante
 					{
 						//si on a déjà visité cette affiche
 						bool visite = false;
-						for(auto iter = picts_vu.begin(); iter != picts_vu.end(); iter ++)
+						for(auto iter = picts_vu.begin(); iter != picts_vu.end(); iter ++) //on verifie que l'affiche n'appartient pas à un mur horizontal
 						{
 							if(Coord{x,i} == *iter)
 							{
@@ -233,7 +245,7 @@ void scan_laby (Labyrinthe* l,ifstream& file, map<char,int> table_texture)
 								break;
 							}
 						}
-						if(!visite)
+						if(!visite) //si on ne l'a pas déja visité, on l'ajoute
 						{
 							(l->_npicts)++;
 							picts.push_back({x,i,x,i+1,table_texture[c]});
@@ -306,10 +318,11 @@ void scan_laby (Labyrinthe* l,ifstream& file, map<char,int> table_texture)
 	for(int i = 0; i < l->_nguards; i++)
 	{
 		//inversion des coords
+		/*
 		float tmp = Guards[i]->_x;
 		Guards[i]->_x = Guards[i]->_y;
 		Guards[i]->_y = tmp;
-		//////////////////////
+		/////////////////////*/
 		l->_guards[i] = Guards[i];
 		//cout<<"Guard "<<l->_guards[i]<<": "<<(l->_guards[i])->_x<<","<<(l->_guards[i])->_y<<endl;
 	}
@@ -319,10 +332,11 @@ void scan_laby (Labyrinthe* l,ifstream& file, map<char,int> table_texture)
 	for(int i = 0; i < l->_nmarks; i++)
 	{
 		//inversion des coordonnées:
+		/*
 		int temp = marques[i]._x;
 		marques[i]._x = marques[i]._y;
 		marques[i]._y = temp;
-		//
+		////////////////////////////*/
 		l->_marks[i] = marques[i];
 	}
 
@@ -334,22 +348,15 @@ void scan_laby (Labyrinthe* l,ifstream& file, map<char,int> table_texture)
 Labyrinthe::Labyrinthe (char* filename)
 {
 
-	//																this,"lezard"));
-	//test de la fonction de scan
+		//ouverture du fichier
 		ifstream file;
 		file.open(filename);
 		string line;
-		/*
-		for(int i = 0; i<6; i++)
-		{
-			getline(file,line);
-			cout<<line<<endl;
-		}
-		*/
-		map <char,int> test;
-		scan_test(this, file, test);
-		getchar();
-		scan_laby(this,file,test);
+
+		map <char,int> texture_table;
+		scan_test(this, file, texture_table);
+		//getchar();
+		scan_laby(this,file,texture_table);
 		//Initialisation du son des Gardiens
 		Gardien::_Guard_fire = new Sound("sons/guard_fire.wav");
 		Gardien::_Guard_death = new Sound("sons/guard_die.wav");
@@ -397,6 +404,12 @@ Labyrinthe::Labyrinthe (char* filename)
 			Box b = _boxes[i];
 			_data[b._x][b._y] = '1';
 		}
+
+		/*
+		   On ne met pas de collision au trésor pour permettre au joueur de rentrer dedans afin de finir la partie
+		   Pas non plus de collision pour les gardes pour eviter certains bugs dues à leur mouvment (texture entre deux cases mais collisions que dans une seule)
+		*/
+
 		//le trésor
 		//_data[_treasor._x][_treasor._y] = '1';
 		//guardes
@@ -409,6 +422,9 @@ Labyrinthe::Labyrinthe (char* filename)
 		}
 		*/
 		//cout<<"fin du test"<<endl;
+
+		//AFFICHAGE POUR DU DEBUG
+		/*
 		file.close();
 		cout<<endl<<endl<<"============================================================================================"<<endl;
 		cout<<"Verif des données"<<endl<<endl;
@@ -444,112 +460,6 @@ Labyrinthe::Labyrinthe (char* filename)
 		}
 		cout<<"fin verif des données"<<endl;
 		//initialisation des données pour les murs
-	/////////////////////////////
-	// les 4 murs.
-	/*
-	static Wall walls [] = {
-		{ 0, 0, LAB_WIDTH-1, 0, 0 },
-		{ LAB_WIDTH-1, 0, LAB_WIDTH-1, LAB_HEIGHT-1, 0 },
-		{ LAB_WIDTH-1, LAB_HEIGHT-1, 0, LAB_HEIGHT-1, 0 },
-		{ 0, LAB_HEIGHT-1, 0, 0, 0 },
-	};
-	*/
-	// une affiche.
-	//  (attention: pour des raisons de rapport d'aspect, les affiches doivent faire 2 de long)
-	/*
-	static Wall affiche [] = {
-		{ 4, 0, 6, 0, 0 },		// premi�re affiche.
-		{ 8, 0, 10, 0, 0 },		// autre affiche.
-	};
-	*/
-	// 3 caisses.
-	/*
-	static Box	caisses [] = {
-		{ 70, 12, 0 },
-		{ 10, 5, 0 },
-		{ 65, 22, 0 },
-	};
-	*/
-
-/* DEB - NOUVEAU */
-	// 2 marques au sol.
-	/*
-	static Box	marques [] = {
-		{ 50, 14, 0 },
-		{ 20, 15, 0 },
-	};
-	*/
-/* FIN - NOUVEAU */
-
-	// juste un mur autour et les 3 caisses et le tr�sor dedans.
-	/*
-	for (int i = 0; i < LAB_WIDTH; ++i)
-		for (int j = 0; j < LAB_HEIGHT; ++j) {
-			if (i == 0 || i == LAB_WIDTH-1 || j == 0 || j == LAB_HEIGHT-1)
-				_data [i][j] = 1;
-			else
-				_data [i][j] = EMPTY;
-		}
-	*/
-	// indiquer qu'on ne marche pas sur une caisse.
-	/*
-	_data [caisses [0]._x][caisses [0]._y] = 1;
-	_data [caisses [1]._x][caisses [1]._y] = 1;
-	_data [caisses [2]._x][caisses [2]._y] = 1;
-	*/
-	// les 4 murs.
-	//_nwall = 4;
-	//_walls = walls;
-	// deux affiches.
-	//_npicts = 2;
-	//_picts = affiche;
-	// la deuxi�me � une texture diff�rente.
-	//char	tmp [128];
-	/*
-	sprintf (tmp, "%s/%s", texture_dir, "voiture.jpg");
-	_picts [1]._ntex = wall_texture (tmp);
-	*/
-	// 3 caisses.
-	//_nboxes = 3;
-	//_boxes = caisses;
-
-	/* DEB - NOUVEAU */
-	// mettre une autre texture � la deuxi�me caisse.
-	//sprintf (tmp, "%s/%s", texture_dir, "boite.jpg");
-	//caisses [1]._ntex = 	;
-
-	// mettre les marques au sol.
-	//TODO réutiliser ce code pour varier les textures des marques aux sols
-	/*
-	sprintf (tmp, "%s/%s", texture_dir, "p1.gif");
-	marques [0]._ntex = wall_texture (tmp);
-	sprintf (tmp, "%s/%s", texture_dir, "p3.gif");
-	marques [1]._ntex = wall_texture (tmp);
-	*/
-	//_nmarks = 2;
-	//_marks = marques;
-	/* FIN - NOUVEAU */
-
-	// le tr�sor.
-	//_treasor._x = 10;
-	//_treasor._y = 10;
-	//_data [_treasor._x][_treasor._y] = 1;	// indiquer qu'on ne marche pas sur le tr�sor.
-	// le chasseur et les 4 gardiens.
-	/*
-	_nguards = 5;
-	_guards = new Mover* [_nguards];
-	_guards [0] = new Chasseur (this);
-	_guards [1] = new Gardien (this, "Lezard");
-	_guards [2] = new Gardien (this, "Blade"); _guards [2] -> _x = 90.; _guards [2] -> _y = 70.;
-	_guards [3] = new Gardien (this, "Serpent"); _guards [3] -> _x = 60.; _guards [3] -> _y = 10.;
-	_guards [4] = new Gardien (this, "Samourai"); _guards [4] -> _x = 130.; _guards [4] -> _y = 100.;
-	*/
-	// indiquer qu'on ne marche pas sur les gardiens.
-	/*
-	_data [(int)(_guards [1] -> _x / scale)][(int)(_guards [1] -> _y / scale)] = 1;
-	_data [(int)(_guards [2] -> _x / scale)][(int)(_guards [2] -> _y / scale)] = 1;
-	_data [(int)(_guards [3] -> _x / scale)][(int)(_guards [3] -> _y / scale)] = 1;
-	_data [(int)(_guards [4] -> _x / scale)][(int)(_guards [4] -> _y / scale)] = 1;
-	*/
-	cout<<"fin chargement labyrinthe"<<endl<<"appuie sur une touche"<<endl;
+	////////////////////////////*/
+	//cout<<"fin chargement labyrinthe"<<endl<<"appuie sur une touche"<<endl;
 }

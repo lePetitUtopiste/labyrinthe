@@ -16,7 +16,7 @@ bool Chasseur::move_aux (double dx, double dy)
 	//char test[100];
 	//sprintf(test,"coord: %f,%f | coord2: %d,%d",_x,_y,(int)_x/Environnement::scale,(int)_y/Environnement::scale);
 	//message(test);
-	static auto derniere_teleportation = chrono::high_resolution_clock::now();
+	static auto derniere_teleportation = chrono::high_resolution_clock::now(); //chrono pour ajouter un cooldown aux téléportation sur les marques
 
 	//on verifie que le joueur ne marche pas sur le trésor
 	if ((int)_x/Environnement::scale == _l->_treasor._x && (int) _y/Environnement::scale == _l->_treasor._y)
@@ -39,7 +39,7 @@ bool Chasseur::move_aux (double dx, double dy)
 			_x = (_l->_marks[cpt]._x + 0.5) * Environnement::scale;
 			_y = (_l->_marks[cpt]._y + 0.5) * Environnement::scale;
 
-			derniere_teleportation = chrono::high_resolution_clock::now();
+			derniere_teleportation = chrono::high_resolution_clock::now();//on réinitialise le chrono à 0
 		}
 		_x += dx;
 		_y += dy;
@@ -78,12 +78,12 @@ bool Chasseur::process_fireball (float dx, float dy)
 		int g_y = ( g->_y) / Environnement::scale;
 
 		float dist = sqrt((g_x - x)*(g_x - x) + (g_y - y)*(g_y - y));
-		if(dist <= 1) // si la boule est à distance plus basse que 1
+		if(dist <= 1) // si la boule est à une distance plus basse que 1
 		{
 			//on joue le son et on inflige des dégats
 			g->_Guard_death->play();
 			g->degat(10);
-			return false;//on retourne 0 pour détruire la fb
+			return false;//on retourne false  pour détruire la fb
 		}
 	}
 	//si on a pas touché de garde, on verifie que la fb ne touche pas de mur
@@ -116,10 +116,7 @@ void Chasseur::fire (int angle_vertical)
 }
 
 /*
- *	Clic droit: par d�faut fait tomber le premier gardien.
- *
- *	Inutile dans le vrai jeu, mais c'est juste pour montrer
- *	une utilisation des fonctions � tomber � et � rester_au_sol �
+ *	le clic droit du joueur va désactiver les collisions
  */
 
 void Chasseur::right_click (bool shift, bool control)

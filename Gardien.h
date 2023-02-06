@@ -16,7 +16,7 @@ public:
 	static Sound* _Guard_death;
 
 	const int FOV = 100; //le champ de vision du gardien (représenté par un cercle autour de ce dernier)
-	int _angle_cible;
+	int _angle_cible; // angle à atteindre dans l'animation de la rotation
 	const float _speed = 1; // la vitesse de déplacement du gardien (pour l'instant inutilisé)
 
 	//pourcentage de l'écart actuel a parcourir à chaque update

@@ -19,7 +19,7 @@ public:
 	static Sound*	_wall_hit;	// on a tap� un mur.
 	static Sound*	_hunter_fire;	// bruit de l'arme du chasseur.
 
-	const int cooldown_telep = 5;
+	const int cooldown_telep = 5; //temps minimum entre deux téléportations (en secondes)
 	// constructeur.
 	Chasseur (Labyrinthe* l);
 	// ne bouger que dans une case vide (on 'glisse' le long des obstacles)
