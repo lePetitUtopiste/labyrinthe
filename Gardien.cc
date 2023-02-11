@@ -226,7 +226,7 @@ void Gardien::fire(int angle_vertical)
 {
     static auto cooldown_tir = chrono::high_resolution_clock::now();
     chrono::duration<double> temps_ecoule = chrono::high_resolution_clock::now() - cooldown_tir;
-    if(temps_ecoule.count() >= 2)
+    if(temps_ecoule.count() >= vitesse_tir)
     {
         cooldown_tir = chrono::high_resolution_clock::now();    
         //message ("Woooshh...");

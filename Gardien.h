@@ -25,6 +25,9 @@ public:
 	//l'imprécision maximale du gardien (l'imprécision effective est calculé par rapport au nombre de point de vie restant)
 	const int decalage_tir_max = 10;
 
+	//temps entre deux tirs (en secondes)
+	const int vitesse_tir = 2;
+
 	Gardien (Labyrinthe* l, const char* modele) : Entity(120, 80, l, modele,10),tire(false),_angle_cible(0)
 	{}
 
