@@ -6,6 +6,7 @@ class Labyrinthe;	// la (future) v�tre
 #include "FireBall.h"
 #include "Environnement.h"
 #include "Sound.h"
+#include <algorithm>
 
 class Mover {
 private:
@@ -49,14 +50,18 @@ class Entity : public Mover
 	Toute animation de mort doit être appelé dans l'état 1
 	*/
 	int mort;
+	int vie; //le nombre de points de vie de l'entité, ne peut pas déscendre en dessous de 0
 
 	public:
 
 	static Sound* _hunter_fire;	// bruit de l'arme du chasseur.
 	static Sound* _hunter_hit; // cri du chasseur touch�.
 	const int vie_max;
-	int vie;
 
+	/**
+	 * @brief retire deg au point de vie de l'entité et modifie sont état
+	 * @param deg le nombre de points de vie à retirer
+	*/
 	void degat(int deg){
 		if(mort)
 		{
@@ -66,12 +71,19 @@ class Entity : public Mover
 		if(vie <= 0)
 		{
 			mort = 1;
+			vie = 0;
 		}
+	}
+
+	void regen(int soin)
+	{
+		if (vie != vie_max)
+			vie = std::min(vie + soin,vie_max);
 	}
 
 	Entity(int x, int y, Labyrinthe* l,
 			const char* modele,int v)
-	:Mover(x,y,l,modele),mort(false),vie_max(v),vie(v)
+	:Mover(x,y,l,modele),mort(false),vie(v),vie_max(v)
 	{}
 
 	/**
@@ -101,6 +113,11 @@ class Entity : public Mover
 	{
 		mort = 2;
 		return;
+	}
+
+	int get_vie()
+	{
+		return vie;
 	}
 };
 

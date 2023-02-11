@@ -20,7 +20,8 @@ public:
 	static Sound*	_hunter_fire;	// bruit de l'arme du chasseur.
 
 	const int cooldown_telep = 5; //temps minimum entre deux téléportations (en secondes)
-	// constructeur.
+	const int regen_pourcent = 10; // le pourcentage de points des point de vie à redonner au joueur(calculer par rapport au points de vie max)
+	const int latence_regen = 2; //temps en secondes entre deux gains de points de vies
 	Chasseur (Labyrinthe* l);
 	// ne bouger que dans une case vide (on 'glisse' le long des obstacles)
 	bool move (double dx, double dy) {

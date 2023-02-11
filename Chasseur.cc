@@ -51,7 +51,7 @@ bool Chasseur::move_aux (double dx, double dy)
 /*
  *	Constructeur.
  */
-Chasseur::Chasseur (Labyrinthe* l) : Entity(100, 80, l, 0,10),collision(true)
+Chasseur::Chasseur (Labyrinthe* l) : Entity(100, 80, l, 0,30),collision(true)
 {
 	_hunter_fire = new Sound ("sons/hunter_fire.wav");	// bruit de l'arme du chasseur.
 	_hunter_hit = new Sound ("sons/hunter_hit.wav");	// cri du chasseur touch�.
@@ -133,6 +133,16 @@ void Chasseur::right_click (bool shift, bool control)
 
 void Chasseur::update()
 {
-	if(est_mort())
-		partie_terminee(false);
+	static auto derniere_regen = chrono::high_resolution_clock::now();
+
+	if (get_vie() < vie_max)
+	{
+		chrono::duration<double> temps_ecoule = (chrono::high_resolution_clock::now() - derniere_regen);
+		if (temps_ecoule.count() >= latence_regen )
+		{
+			regen((vie_max * regen_pourcent)/100);
+			derniere_regen = chrono::high_resolution_clock::now();
+		}
+	}
+	message("%d",get_vie());
 }

@@ -136,7 +136,6 @@ void scan_laby (Labyrinthe* l,ifstream& file, map<char,int> table_texture)
 		auto iter = murs_vert.begin();
 		//cout<<"recherche des murs verticaux"<<endl;
 		int cpt = 1;
-		int taille = murs_vert.size();
 		/*
 		Pour chaque potentiel mur vertical on verifie dans cette ligne ce qui se trouve à cette position
 		*/

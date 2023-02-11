@@ -87,21 +87,6 @@ void affiche_data(char tab[LAB_WIDTH][LAB_HEIGHT])
 bool check_collision(Environnement* l, int x1, int y1, int x2, int y2)
 {
 
-    // Mise en place d'outil de debug
-
-    char debug[LAB_WIDTH][LAB_HEIGHT];
-
-    for (int y = 0; y < LAB_HEIGHT; y++)
-    {
-        for(int x = 0; x < LAB_WIDTH; x++)
-        {
-            debug[x][y] = '-';
-        }
-
-    }
-
-    // debug[(int)x1][(int)y1] = 'X';
-    // debug[(int)x2][(int)y2] = 'X';
 
     //initialisation de l'algo de bresenham
     int dx , dy;
@@ -159,15 +144,10 @@ bool check_collision(Environnement* l, int x1, int y1, int x2, int y2)
           y += sy;
         }
 
-        // if(x != x2 || y != y2)
-        //   debug[(int)x][(int)y] = 'O';
         
         //si la case est occupée, on s'arrête
         if(l->data(x,y) > EMPTY)
         {
-            // cout<<"fin recherche collision"<<endl;
-            // affiche_data(debug);
-            // cout<<"fin debug"<<endl;
             return false;
         }
 
@@ -230,7 +210,10 @@ bool Gardien::process_fireball(float dx, float dy)
     if( dist <= 1)
     {
         Chasseur::_hunter_hit->play(); //joueur le son du joueur étant blessé
-        ((Entity*)(_l->_guards[0]))->degat(10);// retire les dégats
+        ((Entity*)(_l->_guards[0]))->degat(5);// retire les dégats
+        
+        if(((Entity*)(_l->_guards[0]))->est_mort())
+		    partie_terminee(false);
     }
     tire = false;
 	//message ("Booom...");
@@ -241,11 +224,19 @@ bool Gardien::process_fireball(float dx, float dy)
 
 void Gardien::fire(int angle_vertical)
 {
-    //message ("Woooshh...");
-    tire = true;
-	_Guard_fire -> play ();
-	_fb -> init (/* position initiale de la boule */ _x, _y, 10.,
-				 /* angles de vis�e */ angle_vertical, (-_angle_cible));
+    static auto cooldown_tir = chrono::high_resolution_clock::now();
+    chrono::duration<double> temps_ecoule = chrono::high_resolution_clock::now() - cooldown_tir;
+    if(temps_ecoule.count() >= 2)
+    {
+        cooldown_tir = chrono::high_resolution_clock::now();    
+        //message ("Woooshh...");
+        tire = true;
+        _Guard_fire -> play ();
+        int imprecision_pourcent = 100 - (100*get_vie())/vie_max;//pourcentage de vie restant
+        int angle_tir = _angle_cible + ((rand()%3)-1)*(imprecision_pourcent * decalage_tir_max)/100;//+ ou - pourcentage du décalage max
+        _fb -> init (/* position initiale de la boule */ _x, _y, 10.,
+                    /* angles de vis�e */ angle_vertical, (-angle_tir));
+    }
 }
 
 void Gardien::update()
@@ -289,13 +280,13 @@ void Gardien::update()
     //On met -sin et cos car le regard de la texture et la variable angle on une différence de 90°
     bool coll = move(-sin(_angle_rad)*_speed,cos(_angle_rad)*_speed); //on verifie si le gardien peut bouger
 
-    bool vu_debug = false;
+    //bool vu_debug = false;
     if(dist.norm() < FOV && check_collision(_l,_x/Environnement::scale
                                               ,_y/Environnement::scale
                                               ,p_x/Environnement::scale
                                               ,p_y/Environnement::scale)) //si le joueur est dans le champ de vision et que le gardien peut le voir
     {
-        vu_debug = true;
+        //vu_debug = true;
         _angle_cible = dist.angle(); //on change l'angle cible du gardien pour qu'il fasse façe au joueur
         if(!tire)
         {
@@ -315,10 +306,12 @@ void Gardien::update()
        _angle =  (1-_vitesse_rotation) * _angle + _vitesse_rotation * _angle_cible; //interpolation linéaire
 
     // DEBUG ////////////////////////////////////////////////////////////////
+    /*
      char test[100];
      sprintf(test,"Guard: angle:%d|cible:%d\nDist: %f angle:%d| %d",_angle,
              _angle_cible,dist.norm(),dist.angle(),vu_debug);
      message(test);
+     */
      ////////////////////////////////////////////////////////////////////////
 
 }
